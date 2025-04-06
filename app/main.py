@@ -5,6 +5,7 @@ from app.api.v1.router import api_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
+    description=settings.PROJECT_DESCRIPTION,
     version=settings.PROJECT_VERSION
 )
 

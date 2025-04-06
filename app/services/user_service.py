@@ -1,23 +1,14 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.core.security import hash_password
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.schemas.otp import OTPRequest
 
 
 class UserService:
-
-    @staticmethod
-    def _get_user_or_404(db: Session, user_id: int) -> User:
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='User not found'
-            )
-        return user
 
     @staticmethod
     async def get_all_users(db: Session) -> List[User]:
@@ -42,10 +33,34 @@ class UserService:
         db.add(user)
         db.commit()
         db.refresh(user)
+        return user
+
+    @staticmethod
+    async def get_by_phone(phone_number: str, db: Session) -> User:
+        user = db.query(User).filter(User.phone_number == phone_number).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='User not found'
+            )
+        return user
+
+    @staticmethod
+    async def get_or_create_by_phone(phone_number: str, db: Session) -> User:
+        user = db.query(User).filter(User.phone_number == phone_number).first()
+        created = False
+        if not user:
+            user = User(phone_number=phone_number)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            created = True
+        return user, created
 
     @staticmethod
     async def get_user_by_id(user_id: int, db: Session) -> User:
         return UserService._get_user_or_404(db, user_id)
+    
 
     @staticmethod
     async def update_user(db: Session, user_id: int, user: UserUpdate) -> User:

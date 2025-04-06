@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserBase(BaseModel):
-    email: EmailStr
     name: Optional[str] = None
 
 
@@ -32,9 +31,8 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    phone_number: str
     is_active: bool
-    is_admin: bool
-    last_login: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

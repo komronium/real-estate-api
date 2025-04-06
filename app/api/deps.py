@@ -32,8 +32,8 @@ async def get_current_user(
     if not payload:
         raise credentials_exception
 
-    email = payload.get('sub')
-    user = db.query(User).filter(User.email == email).first()
+    user_id = payload.get('sub')
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise credentials_exception
 
