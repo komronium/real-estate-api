@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.add import Ad
+from app.models.ad import Ad
 from app.schemas.ad import AdCreate, AdUpdate
 
 
