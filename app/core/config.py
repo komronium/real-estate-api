@@ -4,7 +4,6 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-
     # Application
     PROJECT_NAME: str = "Real Estate API"
     PROJECT_DESCRIPTION: str = "Real Estate API for managing properties, users, and transactions."
@@ -28,11 +27,13 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 2
     OTP_LENGTH: int = 6
 
-
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
         case_sensitive = True
 
 
-settings = Settings()
+settings = Settings(
+    SECRET_KEY="mydevsecretkey123",
+    DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5432/mydatabase"
+)

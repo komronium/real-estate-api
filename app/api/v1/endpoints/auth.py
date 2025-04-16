@@ -8,14 +8,25 @@ from app.schemas.auth import LoginRequest, SignupRequest, Token
 from app.services.auth_service import AuthService
 
 router = APIRouter(
-    prefix='/api/v1', 
+    prefix='/api/v1',
     tags=['Authentication']
 )
 
 
+@router.get("/test/xx")
+async def say_hello():
+    print("goodo")
+    return "Good"
+
+
+@router.get("/hasan")
+async def say_hello():
+    print("goodo")
+    return "Hasan"
+
 @router.post(
-    '/login', 
-    response_model=Token, 
+    '/login',
+    response_model=Token,
     status_code=status.HTTP_200_OK,
     responses={
         400: {'description': 'Invalid credentials'},
@@ -24,15 +35,15 @@ router = APIRouter(
     }
 )
 async def login(
-    request: LoginRequest, 
-    db: Session = Depends(get_db)
+        request: LoginRequest,
+        db: Session = Depends(get_db)
 ) -> Token:
     return await AuthService.login(db, request)
 
 
 @router.post(
-    '/signup', 
-    response_model=UserOut, 
+    '/signup',
+    response_model=UserOut,
     status_code=status.HTTP_201_CREATED,
     responses={
         400: {'description': 'Invalid credentials'},
@@ -40,7 +51,7 @@ async def login(
     }
 )
 async def signup(
-    request: SignupRequest,
-    db: Session = Depends(get_db)
+        request: SignupRequest,
+        db: Session = Depends(get_db)
 ) -> User:
     return await AuthService.signup(db, request)
