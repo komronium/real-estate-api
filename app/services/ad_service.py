@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.ad import Ad
@@ -19,14 +20,18 @@ class AdService:
 
     @staticmethod
     def get_ad_by_id(ad_id: int, db: Session):
-        return db.query(Ad).filter(Ad.id == ad_id).first()
+        ad = db.query(Ad).filter(Ad.id == ad_id).first()
+        if not ad:
+            raise HTTPException(status_code=404, detail="Ad not found")
+        return ad
 
     @staticmethod
     def update_ad(ad_id: int, ad_data: AdUpdate, db: Session):
         ad = db.query(Ad).filter(Ad.id == ad_id).first()
         if ad:
             for key, value in ad_data.model_dump().items():
-                setattr(ad, key, value)
+                if value is not None:
+                    setattr(ad, key, value)
             db.commit()
             db.refresh(ad)
         return ad

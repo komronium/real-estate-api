@@ -33,7 +33,4 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
-settings = Settings(
-    SECRET_KEY="mydevsecretkey123",
-    DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5432/mydatabase"
-)
+settings = Settings()

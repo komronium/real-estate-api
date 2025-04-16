@@ -5,11 +5,10 @@ from typing import Optional
 
 
 class AdBase(BaseModel):
-    id: int
     title: str
     description: str = Field(..., min_length=40)
-    image_url: Optional[str]
-    location: Optional[str]
+    image_url: Optional[str] = None
+    location: Optional[str] = None
     full_name: str
     email: EmailStr
     phone_number: str
@@ -20,7 +19,10 @@ class AdCreate(AdBase):
 
 
 class AdUpdate(AdBase):
-    pass
+    description: Optional[str] = None
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
 
 
 class AdOut(AdBase):

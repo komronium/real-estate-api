@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Mapping
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
@@ -46,9 +46,10 @@ class UserService:
         return user
 
     @staticmethod
-    async def get_or_create_by_phone(phone_number: str, db: Session) -> User:
+    async def get_or_create_by_phone(phone_number: str, db: Session) -> Mapping[User, bool]:
         user = db.query(User).filter(User.phone_number == phone_number).first()
         created = False
+
         if not user:
             user = User(phone_number=phone_number)
             db.add(user)

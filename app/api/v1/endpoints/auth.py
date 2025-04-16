@@ -13,17 +13,6 @@ router = APIRouter(
 )
 
 
-@router.get("/test/xx")
-async def say_hello():
-    print("goodo")
-    return "Good"
-
-
-@router.get("/hasan")
-async def say_hello():
-    print("goodo")
-    return "Hasan"
-
 @router.post(
     '/login',
     response_model=Token,

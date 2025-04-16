@@ -1,5 +1,7 @@
 from enum import Enum
 from sqlalchemy import Column, String, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy.orm import relationship
+
 from app.db.base import Base
 
 
@@ -17,3 +19,5 @@ class User(Base):
     phone_number = Column(String(length=16), unique=True, nullable=True)
     password = Column(String(length=64), nullable=True)
     # e-signature fields here
+
+    ads = relationship('Ad', back_populates='user')
