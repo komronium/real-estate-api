@@ -7,13 +7,13 @@ from app.schemas.auth import Token
 from app.services.esignature_service import ESignatureService
 
 router = APIRouter(
-    prefix='/api/v1/eimzo',
+    prefix='/api/v1/auth',
     tags=['Authentication']
 )
 
 
 @router.post(
-    '/auth',
+    '/eimzo',
     response_model=Token,
     status_code=status.HTTP_200_OK,
     responses={
@@ -22,7 +22,7 @@ router = APIRouter(
         500: {'description': 'Internal Server Error'}
     }
 )
-async def eimzo_auth(
+async def login_with_eimzo(
     dto: Base64Dto,
     db: Session = Depends(get_db)
 ) -> Token:

@@ -37,3 +37,33 @@ def decode_access_token(token: str) -> Optional[Dict]:
         )
     except JWTError:
         return None
+    
+
+def create_refresh_token(data: dict) -> str:
+    payload = data.copy()
+    expire = datetime.now() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    payload.update({'exp': expire, 'type': 'refresh'})
+
+    return jwt.encode(
+        payload,
+        settings.SECRET_KEY.get_secret_value(),
+        algorithm=settings.ALGORITHM
+    )
+
+
+def refresh_access_token(token: str) -> Optional[str]:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY.get_secret_value(),
+            algorithms=[settings.ALGORITHM]
+        )
+        if payload.get('type') != 'refresh':
+            return None
+        
+        del payload['exp']
+        del payload['type']
+        
+        return create_access_token(data=payload)
+    except JWTError:
+        return None

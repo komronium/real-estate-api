@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -9,8 +9,8 @@ from app.services.otp_service import OTPService
 
 
 router = APIRouter(
-    prefix='/api/v1/otp',
-    tags=['OTP']
+    prefix='/api/v1/auth/otp',
+    tags=['Authentication']
 )
 
 
@@ -33,14 +33,14 @@ async def request_otp(
 
 
 @router.post(
-    '/verify',
+    '/login',
     response_model=Token,
     status_code=200,
     responses={
         400: {'description': 'Invalid or expired OTP code'}
     }
 )
-async def verify_otp(
+async def login_with_otp(
     request: OTPVerify,
     db: Session = Depends(get_db),
 ) -> Token:

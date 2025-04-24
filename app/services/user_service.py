@@ -57,6 +57,16 @@ class UserService:
             db.refresh(user)
             created = True
         return user, created
+    
+    @staticmethod
+    def _get_user_or_404(db: Session, user_id: int) -> User:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='User not found'
+            )
+        return user
 
     @staticmethod
     async def get_user_by_id(user_id: int, db: Session) -> User:

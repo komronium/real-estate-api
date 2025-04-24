@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.core.security import create_access_token
+from app.core.security import create_access_token,create_refresh_token
 from app.core.config import settings
 from app.models.otp import OTP
 from app.schemas.auth import Token
@@ -52,5 +52,9 @@ class OTPService:
     @staticmethod
     async def create_token(user) -> Token:
         access_token = create_access_token({'sub': str(user.id)})
-        return Token(access_token=access_token)
+        refresh_token = create_refresh_token({'sub': str(user.id), 'type': 'refresh'})
+        return Token(
+            access_token=access_token,
+            refresh_token=refresh_token
+        )
     

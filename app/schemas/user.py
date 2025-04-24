@@ -1,7 +1,9 @@
 import re
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.models.user import UserRole
 
 
 class UserBase(BaseModel):
@@ -31,6 +33,7 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    role: UserRole 
     phone_number: str
     is_active: bool
     created_at: datetime

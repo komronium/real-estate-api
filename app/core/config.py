@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     # Authentication
     SECRET_KEY: SecretStr
     ALGORITHM: str = 'HS256'
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ['http://localhost:8000']

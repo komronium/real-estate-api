@@ -4,9 +4,16 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import EmailStr
 
-from app.core.security import hash_password, create_access_token, verify_password
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_access_token,
+    hash_password,
+    verify_password
+)
 from app.models.user import User
 from app.schemas.auth import LoginRequest, SignupRequest, Token
+from app.services.user_service import UserService
 
 
 class AuthService:
@@ -58,3 +65,36 @@ class AuthService:
         db.commit()
         db.refresh(user)
         return user
+    
+    @staticmethod
+    async def refresh_token(db: Session, refresh_token: str) -> Token:
+        decoded_token = decode_access_token(refresh_token)
+        if not decoded_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Invalid refresh token',
+                headers={'WWW-Authenticate': 'Bearer'},
+            )
+        
+        if decoded_token.get('type') != 'refresh':
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Invalid token type',
+                headers={'WWW-Authenticate': 'Bearer'},
+            )
+        
+        user = await UserService.get_user_by_id(decoded_token['sub'], db)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='User not found',
+                headers={'WWW-Authenticate': 'Bearer'},
+            )
+        
+        access_token = create_access_token({'sub': user.id})
+        new_refresh_token = create_refresh_token({'sub': user.id, 'type': 'refresh'})
+
+        return Token(
+            access_token=access_token, 
+            refresh_token=new_refresh_token
+        )
