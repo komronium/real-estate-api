@@ -41,7 +41,8 @@ async def update_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> User:
-    return await UserService.update_user(db, current_user.id, user_update)
+    user_service = UserService(db)
+    return await user_service.update_user(current_user.id, user_update)
 
 
 @router.delete(
@@ -56,4 +57,5 @@ async def delete_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> None:
-    await UserService.delete_user(db, current_user.id)
+    user_service = UserService(db)
+    await user_service.delete_user(current_user.id)

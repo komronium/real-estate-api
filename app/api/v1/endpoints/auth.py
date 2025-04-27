@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.schemas.auth import LoginRequest, Token, RefreshTokenRequest
+from app.schemas.auth import LoginAdminRequest, Token, RefreshTokenRequest
 
 from app.services.auth_service import AuthService
 
@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.post(
-    '/login',
+    '/login-admin',
     response_model=Token,
     status_code=status.HTTP_200_OK,
     responses={
@@ -23,10 +23,11 @@ router = APIRouter(
     }
 )
 async def login_admin(
-    request: LoginRequest,
+    request: LoginAdminRequest,
     db: Session = Depends(get_db)
 ) -> Token:
-    return await AuthService.login(db, request)
+    auth_service = AuthService(db)
+    return await auth_service.login_admin(request)
 
 
 @router.post(
@@ -43,4 +44,5 @@ async def refresh_token(
     request: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ) -> Token:
-    return await AuthService.refresh_token(db, request.refresh_token)
+    auth_service = AuthService(db)
+    return await auth_service.refresh_token(request.refresh_token)

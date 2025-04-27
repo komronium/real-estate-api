@@ -10,7 +10,8 @@ class UserBase(BaseModel):
     name: Optional[str] = None
 
 
-class UserCreate(UserBase):
+class UserAdminCreate(UserBase):
+    username: str = Field(..., min_length=3, max_length=50)
     password: str = Field(..., min_length=8, max_length=128)
 
     @field_validator('password', mode='before')
@@ -34,7 +35,8 @@ class UserUpdate(BaseModel):
 class UserOut(UserBase):
     id: int
     role: UserRole 
-    phone_number: str
+    phone_number: Optional[str] = None
+    username: Optional[str] = None
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

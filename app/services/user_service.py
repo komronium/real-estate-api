@@ -1,91 +1,72 @@
-from typing import List, Optional, Mapping
+from typing import List, Mapping
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.core.security import hash_password
-from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate
-from app.schemas.otp import OTPRequest
+from app.models.user import User, UserRole
+from app.schemas.user import UserUpdate
 
 
 class UserService:
 
-    @staticmethod
-    async def get_all_users(db: Session) -> List[User]:
-        return db.query(User).all()
+    def __init__(self, db: Session):
+        self.db = db
 
-    @staticmethod
-    async def create_user(user_data: UserCreate, db: Session) -> User:
-        existing_user = db.query(User).filter(User.email == user_data.email).first()
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Email already exists'
-            )
+    async def get_all_users(self) -> List[User]:
+        return self.db.query(User).all()
 
-        hashed_password = hash_password(user_data.password)
+    async def create_admin(self, username: str, password: str) -> User:
+        user = self.db.query(User).filter(User.username == username).first()
+        if user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Username already exists')
+
         user = User(
-            email=user_data.email,
-            password=hashed_password,
-            name=user_data.name
+            username=username,
+            password=hash_password(password),
+            role=UserRole.ADMIN,
         )
             
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
         return user
 
-    @staticmethod
-    async def get_by_phone(phone_number: str, db: Session) -> User:
-        user = db.query(User).filter(User.phone_number == phone_number).first()
+    async def get_by_phone(self, phone_number: str) -> User:
+        user = self.db.query(User).filter(User.phone_number == phone_number).first()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='User not found'
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
         return user
 
-    @staticmethod
-    async def get_or_create_by_phone(phone_number: str, db: Session) -> Mapping[User, bool]:
-        user = db.query(User).filter(User.phone_number == phone_number).first()
+    async def get_or_create_by_phone(self, phone_number: str) -> Mapping[User, bool]:
+        user = self.db.query(User).filter(User.phone_number == phone_number).first()
         created = False
 
         if not user:
             user = User(phone_number=phone_number)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            created = True
+            self.db.add(user)
+            self.db.commit()
+            self.db.refresh(user)
+            self.created = True
+            
         return user, created
-    
-    @staticmethod
-    def _get_user_or_404(db: Session, user_id: int) -> User:
-        user = db.query(User).filter(User.id == user_id).first()
+
+    async def get_user_by_id(self, user_id: int) -> User:
+        user = self.db.query(User).filter(User.id == user_id).first()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='User not found'
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
         return user
-
-    @staticmethod
-    async def get_user_by_id(user_id: int, db: Session) -> User:
-        return UserService._get_user_or_404(db, user_id)
     
+    async def update_user(self, user_id: int, user_data: UserUpdate) -> User:
+        user = await self.get_user_by_id(user_id)
 
-    @staticmethod
-    async def update_user(db: Session, user_id: int, user: UserUpdate) -> User:
-        db_user = UserService._get_user_or_404(db, user_id)
-        for key, value in user.model_dump().items():
-            if value is not None:
-                setattr(db_user, key, value)
+        for key, value in user_data.model_dump(exclude_unset=True).items():
+            setattr(user, key, value)
 
-        db.commit()
-        db.refresh(db_user)
-        return db_user
+        self.db.commit()
+        self.db.refresh(user)
+        return user
     
-    @staticmethod
-    async def delete_user(db: Session, user_id: int) -> None:
-        db_user = UserService._get_user_or_404(db, user_id)
-        db.delete(db_user)
-        db.commit()
+    async def delete_user(self, user_id: int) -> None:
+        user = await self.get_user_by_id(user_id)
+        self.db.delete(user)
+        self.db.commit()

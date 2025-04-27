@@ -2,38 +2,36 @@ from typing import Optional
 from datetime import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import EmailStr
 
 from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_access_token,
-    hash_password,
     verify_password
 )
-from app.models.user import User
-from app.schemas.auth import LoginRequest, SignupRequest, Token
+from app.models.user import User, UserRole
+from app.schemas.auth import LoginAdminRequest, Token
 from app.services.user_service import UserService
 
 
 class AuthService:
 
-    @staticmethod
-    async def authenticate(db: Session, email: EmailStr, password: str) -> Optional[User]:
-        user: Optional[User] = db.query(User).filter(User.email == email).first()
+    def __init__(self, db: Session):
+        self.db = db
+
+    async def authenticate_admin(self, username: str, password: str) -> Optional[User]:
+        user = self.db.query(User).filter(User.username == username, User.role == UserRole.ADMIN).first()
         if not user or not verify_password(password, user.password):
             return None
         return user
 
-    @staticmethod
-    async def update_last_login(user: User, db: Session) -> None:
+    async def update_last_login(self, user: User) -> None:
         user.last_login = datetime.now()
-        db.commit()
-        db.refresh(user)
+        self.db.commit()
+        self.db.refresh(user)
 
-    @staticmethod
-    async def login(db: Session, request: LoginRequest) -> Token:
-        user: Optional[User] = await AuthService.authenticate(db, request.email, request.password)
+    async def login_admin(self, request: LoginAdminRequest) -> Token:
+        user = await self.authenticate_admin(request.username, request.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,60 +39,23 @@ class AuthService:
                 headers={'WWW-Authenticate': 'Bearer'},
             )
 
-        await AuthService.update_last_login(user, db)
+        await self.update_last_login(user)
+        return await self.create_token(user)
 
-        access_token = create_access_token({'sub': user.email})
-        return Token(access_token=access_token)
-
-    @staticmethod
-    async def signup(db: Session, request: SignupRequest) -> User:
-        existing_user: Optional[User] = db.query(User).filter(User.email == request.email).first()
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Email already exists'
-            )
-
-        hashed_password = hash_password(request.password)
-        user: User = User(
-            email=request.email,
-            password=hashed_password,
-            name=request.name
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return user
-    
-    @staticmethod
-    async def refresh_token(db: Session, refresh_token: str) -> Token:
-        decoded_token = decode_access_token(refresh_token)
-        if not decoded_token:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid refresh token',
-                headers={'WWW-Authenticate': 'Bearer'},
-            )
-        
-        if decoded_token.get('type') != 'refresh':
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid token type',
-                headers={'WWW-Authenticate': 'Bearer'},
-            )
-        
-        user = await UserService.get_user_by_id(decoded_token['sub'], db)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='User not found',
-                headers={'WWW-Authenticate': 'Bearer'},
-            )
-        
-        access_token = create_access_token({'sub': user.id})
-        new_refresh_token = create_refresh_token({'sub': user.id, 'type': 'refresh'})
-
+    async def create_token(self, user) -> Token:
+        access_token = create_access_token({'sub': str(user.id)})
+        refresh_token = create_refresh_token({'sub': str(user.id), 'type': 'refresh'})
         return Token(
-            access_token=access_token, 
-            refresh_token=new_refresh_token
+            access_token=access_token,
+            refresh_token=refresh_token
         )
+    
+    async def refresh_token(self, refresh_token: str) -> Token:
+        payload = decode_access_token(refresh_token)
+
+        if not payload or payload.get('type') != 'refresh':
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid refresh token')
+        
+        user_service = UserService(self.db)
+        user = await user_service.get_user_by_id(payload['sub'])
+        return await self.create_token(user)

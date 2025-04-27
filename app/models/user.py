@@ -12,9 +12,10 @@ class UserRole(str, Enum):
 
 
 class User(Base):
-    role = Column(String(length=5), SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
     name = Column(String(length=128), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    role = Column(String(length=5), SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
+    username = Column(String(length=64), unique=True, nullable=True)
 
     phone_number = Column(String(length=16), unique=True, nullable=True)
     password = Column(String(length=64), nullable=True)

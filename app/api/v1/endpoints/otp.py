@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.schemas.auth import Token
 from app.schemas.otp import OTPRequest, OTPVerify, OTPResponse
+from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.otp_service import OTPService
 
@@ -23,8 +24,10 @@ async def request_otp(
     request: OTPRequest,
     db: Session = Depends(get_db),
 ) -> OTPResponse:
-    user, _ = await UserService.get_or_create_by_phone(request.phone_number, db)
-    code = await OTPService.create_otp(request, db)
+    user_service = UserService(db)
+    user, _ = await user_service.get_or_create_by_phone(request.phone_number)
+    otp_service = OTPService(db)
+    code = await otp_service.create_otp(request)
 
     # TODO: Integrate with SMS service
     print(f"OTP code: {code}")
@@ -44,6 +47,9 @@ async def login_with_otp(
     request: OTPVerify,
     db: Session = Depends(get_db),
 ) -> Token:
-    user = await UserService.get_by_phone(request.phone_number, db) 
-    await OTPService.verify_otp(request, db)   
-    return await OTPService.create_token(user)
+    user_service = UserService(db)
+    otp_service = OTPService(db)
+    auth_service = AuthService(db)
+    user = await user_service.get_by_phone(request.phone_number)
+    await otp_service.verify_otp(request)
+    return await auth_service.create_token(user)

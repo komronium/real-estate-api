@@ -11,36 +11,49 @@ router = APIRouter(prefix="/api/v1/ads", tags=["Ads"])
 
 
 @router.post("/", response_model=AdOut, status_code=status.HTTP_201_CREATED)
-def create_ad(ad: AdCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return AdService.create_ad(ad, current_user.id, db)
+def create_ad(
+    ad_data: AdCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    return ad_service.create_ad(ad_data, current_user.id)
 
 
 @router.get("/", response_model=List[AdOut])
 def list_ads(db: Session = Depends(get_db)):
-    return AdService.get_all_ads(db)
+    ad_service = AdService(db)
+    return ad_service.get_all_ads()
 
 
 @router.get("/{ad_id}", response_model=AdOut)
 def get_ad(ad_id: int, db: Session = Depends(get_db)):
-    return AdService.get_ad_by_id(ad_id, db)
+    ad_service = AdService(db)
+    return ad_service.get_ad_or_404(ad_id)
 
 
 @router.patch("/{ad_id}", response_model=AdOut)
 def update_ad(
-        ad_id: int,
-        ad_update: AdUpdate,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+    ad_id: int,
+    ad_update: AdUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    ad = AdService.get_ad_by_id(ad_id, db)
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
     if ad.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    return AdService.update_ad(ad_id, ad_update, db)
+    return ad_service.update_ad(ad_id, ad_update)
 
 
 @router.delete("/{ad_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_ad(ad_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    ad = AdService.get_ad_by_id(ad_id, db)
+def delete_ad(
+    ad_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
     if ad.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    AdService.delete_ad(ad_id, db)
+    ad_service.delete_ad(ad_id)

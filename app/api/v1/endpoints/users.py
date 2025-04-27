@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.api.deps import get_db, get_admin_user
-from app.schemas.user import UserCreate, UserUpdate, UserOut
+from app.schemas.user import UserAdminCreate, UserUpdate, UserOut
 from app.services.user_service import UserService
 
 router = APIRouter(
@@ -24,11 +24,9 @@ router = APIRouter(
 )
 async def list_users(
         db: Session = Depends(get_db)
-) -> List[User]:
-    return await UserService.get_all_users(db)
-
-
-
+) -> List[UserOut]:
+    user_service = UserService(db)
+    return await user_service.get_all_users()
 
 
 @router.post(
@@ -40,11 +38,12 @@ async def list_users(
         401: {'description': 'Unauthorized'}
     }
 )
-async def create_user(
-        user: UserCreate,
-        db: Session = Depends(get_db)
+async def create_admin(
+    user: UserAdminCreate,
+    db: Session = Depends(get_db)
 ) -> User:
-    return await UserService.create_user(user, db)
+    user_service = UserService(db)
+    return await user_service.create_admin(user.username, user.password)
 
 
 @router.get(
@@ -57,10 +56,11 @@ async def create_user(
     }
 )
 async def get_user(
-        user_id: int,
-        db: Session = Depends(get_db)
+    user_id: int,
+    db: Session = Depends(get_db)
 ):
-    return await UserService.get_user_by_id(user_id, db)
+    user_service = UserService(db)
+    return await user_service.get_user_by_id(user_id)
 
 
 @router.patch(
@@ -73,11 +73,12 @@ async def get_user(
     }
 )
 async def update_user(
-        user_id: int,
-        user_update: UserUpdate,
-        db: Session = Depends(get_db)
+    user_id: int,
+    user_data: UserUpdate,
+    db: Session = Depends(get_db)
 ) -> User:
-    return await UserService.update_user(db, user_id, user_update)
+    user_service = UserService(db)
+    return await user_service.update_user(user_id, user_data)
 
 
 @router.delete(
@@ -89,7 +90,8 @@ async def update_user(
     }
 )
 async def delete_user(
-        user_id: int,
-        db: Session = Depends(get_db)
-):
-    await UserService.delete_user(db, user_id)
+    user_id: int,
+    db: Session = Depends(get_db)
+) -> None:
+    user_service = UserService(db)
+    await user_service.delete_user(user_id)
