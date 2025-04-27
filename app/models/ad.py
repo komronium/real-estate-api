@@ -17,3 +17,6 @@ class Ad(Base):
 
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="ads")
+
+    category_id = Column(Integer, ForeignKey("category.id"), nullable=True)
+    category = relationship("Category", back_populates="ads")

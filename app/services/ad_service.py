@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from app.models.ad import Ad
 from app.schemas.ad import AdCreate, AdUpdate
@@ -15,8 +16,23 @@ class AdService:
         return new_ad
 
     @staticmethod
-    def get_all_ads(db: Session):
-        return db.query(Ad).all()
+    def get_all_ads(
+            db: Session,
+            category_id: Optional[int] = None,
+            min_price: Optional[int] = None,
+            max_price: Optional[int] = None
+    ):
+        query = db.query(Ad)
+
+        if category_id is not None:
+            query = query.filter(Ad.category_id == category_id)
+
+        if min_price is not None:
+            query = query.filter(Ad.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Ad.price <= max_price)
+
+        return query.all()
 
     @staticmethod
     def get_ad_by_id(ad_id: int, db: Session):
@@ -34,6 +50,17 @@ class AdService:
                     setattr(ad, key, value)
             db.commit()
             db.refresh(ad)
+        return ad
+
+    @staticmethod
+    def update_ad_category(ad_id: int, category_id: int, db: Session):
+        ad = db.query(Ad).filter(Ad.id == ad_id).first()
+        if not ad:
+            raise HTTPException(status_code=404, detail="Ad not found")
+
+        ad.category_id = category_id
+        db.commit()
+        db.refresh(ad)
         return ad
 
     @staticmethod

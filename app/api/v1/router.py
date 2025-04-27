@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, users, profile, otp, eimzo,ad
+from app.api.v1.endpoints import auth, users, profile, otp, eimzo,ad,category
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(eimzo.router)
 api_router.include_router(users.router)
 api_router.include_router(profile.router)
 api_router.include_router(ad.router)
+api_router.include_router(category.router)
