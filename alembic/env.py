@@ -9,6 +9,7 @@ from app.db.base import Base
 from app.models.user import *
 from app.models.otp import *
 from app.models.ad import *
+from app.models.category import *
 
 config = context.config
 
