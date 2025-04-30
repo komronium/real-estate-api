@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 
@@ -33,7 +34,7 @@ class AdUpdate(AdBase):
 
 class AdOut(AdBase):
     id: int
-    user_id: int
+    user_id: UUID
 
     class Config:
         from_attributes = True
