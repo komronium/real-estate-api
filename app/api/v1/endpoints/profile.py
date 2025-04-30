@@ -12,50 +12,27 @@ router = APIRouter(
 )
 
 
-@router.get(
-    '/',
-    response_model=UserOut,
-    status_code=status.HTTP_200_OK,
-    responses={
-        401: {'description': 'Unauthorized'},
-        404: {'description': 'Not found'}
-    }
-)
+@router.get('/', response_model=UserOut, status_code=status.HTTP_200_OK)
 async def get_profile(
-    current_user: User = Depends(get_current_user)
-) -> User:
+        current_user: User = Depends(get_current_user)
+) -> UserOut:
     return current_user
 
 
-@router.patch(
-    '/',
-    response_model=UserOut,
-    status_code=status.HTTP_200_OK,
-    responses={
-        401: {'description': 'Unauthorized'},
-        404: {'description': 'Not found'}
-    }
-)
+@router.patch('/', response_model=UserOut, status_code=status.HTTP_200_OK)
 async def update_profile(
-    user_update: UserUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        user_update: UserUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ) -> User:
     user_service = UserService(db)
     return await user_service.update_user(current_user.id, user_update)
 
 
-@router.delete(
-    '/',
-    status_code=status.HTTP_204_NO_CONTENT,
-    responses={
-        401: {'description': 'Unauthorized'},
-        404: {'description': 'Not found'}
-    }
-)
+@router.delete('/', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_profile(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 ) -> None:
     user_service = UserService(db)
     await user_service.delete_user(current_user.id)

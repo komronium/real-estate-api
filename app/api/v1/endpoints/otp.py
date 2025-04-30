@@ -7,6 +7,7 @@ from app.schemas.otp import OTPRequest, OTPVerify, OTPResponse
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 from app.services.otp_service import OTPService
+from app.utils.sms import send_sms
 
 
 router = APIRouter(
@@ -25,13 +26,12 @@ async def request_otp(
     db: Session = Depends(get_db),
 ) -> OTPResponse:
     user_service = UserService(db)
-    user, _ = await user_service.get_or_create_by_phone(request.phone_number)
     otp_service = OTPService(db)
-    code = await otp_service.create_otp(request)
 
-    # TODO: Integrate with SMS service
-    print(f"OTP code: {code}")
+    user, _ = await user_service.get_or_create_by_phone(request.phone_number)
+    code = await otp_service.create_otp(user)
 
+    await send_sms(request.phone_number, code)
     return OTPResponse(message="Code sent")
 
 
@@ -51,5 +51,5 @@ async def login_with_otp(
     otp_service = OTPService(db)
     auth_service = AuthService(db)
     user = await user_service.get_by_phone(request.phone_number)
-    await otp_service.verify_otp(request)
-    return await auth_service.create_token(user)
+    await otp_service.verify_otp(user, request)
+    return await auth_service.generate_tokens(user)

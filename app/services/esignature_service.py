@@ -2,8 +2,7 @@ import requests
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.eimzo import Base64Dto
 from app.services.auth_service import AuthService
 
@@ -33,7 +32,7 @@ class ESignatureService:
             user = self.save_user(subject_data, serial_number)
 
         auth_service = AuthService(self.db)
-        return auth_service.create_token(user)
+        return auth_service.generate_tokens(user)
 
     def request_eimzo(self, data: str):
         url = "http://127.0.0.1:8080/backend/auth"
@@ -56,7 +55,7 @@ class ESignatureService:
         return self.db.query(User).filter(User.serial_number == serial_number).first()
 
     def save_user(self, data: dict, serial_number: str):
-        user = User(**data, serial_number=serial_number)
+        user = User(**data, serial_number=serial_number, role=UserRole.LEGAL)
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)

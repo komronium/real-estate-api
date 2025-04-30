@@ -33,16 +33,12 @@ class AuthService:
     async def login_admin(self, request: LoginAdminRequest) -> Token:
         user = await self.authenticate_admin(request.username, request.password)
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid credentials',
-                headers={'WWW-Authenticate': 'Bearer'},
-            )
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid credentials')
 
         await self.update_last_login(user)
-        return await self.create_token(user)
+        return await self.generate_tokens(user)
 
-    async def create_token(self, user) -> Token:
+    async def generate_tokens(self, user) -> Token:
         access_token = create_access_token({'sub': str(user.id)})
         refresh_token = create_refresh_token({'sub': str(user.id), 'type': 'refresh'})
         return Token(
@@ -58,4 +54,4 @@ class AuthService:
         
         user_service = UserService(self.db)
         user = await user_service.get_user_by_id(payload['sub'])
-        return await self.create_token(user)
+        return await self.generate_tokens(user)

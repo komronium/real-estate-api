@@ -64,4 +64,8 @@ def list_ads_by_category(
 ):
     CategoryService.get_category_by_id(category_id, db)
     ad_service = AdService(db)
-    return ad_service.get_all_ads(category_id=category_id, min_price=min_price, max_price=max_price)
+    return ad_service.get_all_ads(
+        category_id=category_id, 
+        min_price=min_price, 
+        max_price=max_price
+    )

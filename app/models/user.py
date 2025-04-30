@@ -1,5 +1,6 @@
+import uuid
 from enum import Enum
-from sqlalchemy import Column, String, Boolean, Enum as SQLAlchemyEnum
+from sqlalchemy import Column, UUID, String, Boolean, Enum as SQLAlchemyEnum
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -12,6 +13,7 @@ class UserRole(str, Enum):
 
 
 class User(Base):
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     name = Column(String(length=128), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     role = Column(String(length=5), SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
@@ -22,3 +24,4 @@ class User(Base):
     # e-signature fields here
 
     ads = relationship('Ad', back_populates='user')
+    otps = relationship('OTP', back_populates='user')

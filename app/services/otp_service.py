@@ -1,11 +1,13 @@
 import random
-import datetime
+from datetime import datetime, timedelta
+from string import digits
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.core.config import settings
+from app.models.user import User
 from app.models.otp import OTP
-from app.schemas.otp import OTPRequest, OTPVerify
+from app.schemas.otp import OTPVerify
 
 
 class OTPService:
@@ -14,16 +16,19 @@ class OTPService:
         self.db = db
 
     def _generate_code(self) -> str:
-        return ''.join(random.choices('0123456789', k=settings.OTP_LENGTH))
+        return ''.join(random.choices(digits, k=settings.OTP_LENGTH))
         
-    async def create_otp(self, request: OTPRequest) -> str:
-        existing_otps = self.db.query(OTP).filter(OTP.phone_number == request.phone_number)
-        existing_otps.delete()
+    async def create_otp(self, user: User) -> str:
+        self.db.query(OTP).filter(
+            OTP.user_id == user.id,
+            OTP.used == False,
+            OTP.expires_at > datetime.now()
+        ).update({OTP.used: True})
 
         code = self._generate_code()
-        expires_at = datetime.datetime.now() + datetime.timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
+        expires_at = datetime.now() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
         otp = OTP(
-            phone_number=request.phone_number,
+            user_id=user.id,
             code=code,
             expires_at=expires_at
         )
@@ -31,11 +36,11 @@ class OTPService:
         self.db.commit()
         return otp.code
 
-    async def verify_otp(self, request: OTPVerify) -> None:
+    async def verify_otp(self, user: User, request: OTPVerify) -> None:
         otp = self.db.query(OTP).filter(
-            OTP.phone_number == request.phone_number,
+            OTP.user_id == user.id,
             OTP.code == request.code,
-            OTP.expires_at > datetime.datetime.now(),
+            OTP.expires_at > datetime.now(),
             OTP.used == False
         ).first()
 

@@ -1,4 +1,4 @@
-from typing import List, Mapping
+from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
@@ -16,7 +16,7 @@ class UserService:
         return self.db.query(User).all()
 
     async def create_admin(self, username: str, password: str) -> User:
-        user = self.db.query(User).filter(User.username == username).first()
+        user = self.get_by_username(username=username)
         if user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Username already exists')
 
@@ -36,8 +36,11 @@ class UserService:
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
         return user
+    
+    async def get_by_username(self, username: str) -> Optional[User]:
+        return self.db.query(User).filter(User.username == username).first()
 
-    async def get_or_create_by_phone(self, phone_number: str) -> Mapping[User, bool]:
+    async def get_or_create_by_phone(self, phone_number: str) -> Tuple[User, bool]:
         user = self.db.query(User).filter(User.phone_number == phone_number).first()
         created = False
 
@@ -46,12 +49,12 @@ class UserService:
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
-            self.created = True
+            created = True
             
         return user, created
 
     async def get_user_by_id(self, user_id: int) -> User:
-        user = self.db.query(User).filter(User.id == user_id).first()
+        user = self.db.get(User, user_id)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
         return user
@@ -60,6 +63,8 @@ class UserService:
         user = await self.get_user_by_id(user_id)
 
         for key, value in user_data.model_dump(exclude_unset=True).items():
+            if key == "password":
+                value = hash_password(value)
             setattr(user, key, value)
 
         self.db.commit()

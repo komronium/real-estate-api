@@ -1,7 +1,8 @@
 import re
+from uuid import UUID
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, UUID4
 
 from app.models.user import UserRole
 
@@ -33,7 +34,7 @@ class UserUpdate(BaseModel):
 
 
 class UserOut(UserBase):
-    id: int
+    id: UUID
     role: UserRole 
     phone_number: Optional[str] = None
     username: Optional[str] = None
