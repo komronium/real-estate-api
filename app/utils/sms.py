@@ -1,3 +1,20 @@
-async def send_sms(phone_number: str, message: str):
-    # Integratsiya: Twilio, Eskiz, SMSC, etc.
-    print(f"[SMS] To: {phone_number} | Message: {message}")
+from eskiz.client import AsyncClient
+
+from app.core.config import settings
+
+
+async def create_client():
+    return AsyncClient(
+        email=settings.ESKIZ_EMAIL,
+        password=settings.ESKIZ_PASSWORD.get_secret_value(),
+    )
+        
+
+async def send_sms(phone_number: str, code: str):
+    client = await create_client()
+    async with client:
+        response = await client.send_sms(
+            phone_number=phone_number,
+            message='This is test from Eskiz',
+        )
+        return response
