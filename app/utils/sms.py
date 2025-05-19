@@ -15,6 +15,6 @@ async def send_sms(phone_number: str, code: str):
     async with client:
         response = await client.send_sms(
             phone_number=phone_number,
-            message=f'Tasdiqlash kodingiz: {code}',
+            message=f"'teamX' akkauntingizning tasdiqlash kodi: {code}",
         )
         return response
