@@ -5,7 +5,7 @@ from typing import List, Optional
 from app.api.deps import get_db, get_current_user
 from app.schemas.category import AdCategoryUpdate
 from app.services.ad_service import AdService
-from app.schemas.ad import AdCreate, AdOut, AdUpdate
+from app.schemas.ad import AdCreate, AdOut, AdUpdate, DealType, PropertyType
 from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/ads", tags=["Ads"])
@@ -26,14 +26,33 @@ def list_ads(
     category_id: Optional[int] = None,
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
+    deal_type: Optional[DealType] = None,
+    property_type: Optional[PropertyType] = None,
+    rooms_count: Optional[int] = None,
+    city: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     ad_service = AdService(db)
     return ad_service.get_all_ads(
         category_id=category_id,
         min_price=min_price,
-        max_price=max_price
+        max_price=max_price,
+        deal_type=deal_type,
+        property_type=property_type,
+        rooms_count=rooms_count,
+        city=city
     )
+
+
+@router.get("/nearby", response_model=List[AdOut])
+def get_nearby_ads(
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    radius_km: float = Query(5.0, ge=0.1, le=50),
+    db: Session = Depends(get_db)
+):
+    ad_service = AdService(db)
+    return ad_service.get_ads_by_location(latitude, longitude, radius_km)
 
 
 @router.get("/{ad_id}", response_model=AdOut)
@@ -70,10 +89,38 @@ def update_ad_category(
     return ad_service.update_ad_category(ad_id, category_update.category_id)
 
 
+@router.post("/{ad_id}/images", response_model=AdOut)
+def add_images_to_ad(
+    ad_id: int,
+    image_urls: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
+    if ad.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return ad_service.add_images_to_ad(ad_id, image_urls)
+
+
+@router.delete("/{ad_id}/images", response_model=AdOut)
+def remove_image_from_ad(
+    ad_id: int,
+    image_url: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
+    if ad.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return ad_service.remove_image_from_ad(ad_id, image_url)
+
+
 @router.delete("/{ad_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_ad(
-    ad_id: int, 
-    db: Session = Depends(get_db), 
+    ad_id: int,
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     ad_service = AdService(db)

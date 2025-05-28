@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 
-from app.models.ad import Ad
+from app.models.ad import Ad, DealType, PropertyType, ContactType
 from app.schemas.ad import AdCreate, AdUpdate
 
 
@@ -12,10 +12,14 @@ class AdService:
         self.db = db
 
     def get_all_ads(
-        self,
-        category_id: Optional[int] = None,
-        min_price: Optional[int] = None,
-        max_price: Optional[int] = None
+            self,
+            category_id: Optional[int] = None,
+            min_price: Optional[int] = None,
+            max_price: Optional[int] = None,
+            deal_type: Optional[DealType] = None,
+            property_type: Optional[PropertyType] = None,
+            rooms_count: Optional[int] = None,
+            city: Optional[str] = None
     ):
         query = self.db.query(Ad)
 
@@ -27,8 +31,20 @@ class AdService:
         if max_price is not None:
             query = query.filter(Ad.price <= max_price)
 
+        if deal_type is not None:
+            query = query.filter(Ad.deal_type == deal_type)
+
+        if property_type is not None:
+            query = query.filter(Ad.property_type == property_type)
+
+        if rooms_count is not None:
+            query = query.filter(Ad.rooms_count == rooms_count)
+
+        if city is not None:
+            query = query.filter(Ad.city.ilike(f"%{city}%"))
+
         return query.all()
-    
+
     def get_ad_or_404(self, ad_id: int):
         ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
         if not ad:
@@ -44,14 +60,16 @@ class AdService:
 
     def update_ad(self, ad_id: int, ad_data: AdUpdate):
         ad = self.get_ad_or_404(ad_id)
-        for key, value in ad_data.model_dump().items():
-            if value is not None:
+        update_data = ad_data.model_dump(exclude_unset=True)
+
+        for key, value in update_data.items():
+            if hasattr(ad, key):
                 setattr(ad, key, value)
-                
+
         self.db.commit()
         self.db.refresh(ad)
         return ad
-    
+
     def update_ad_category(self, ad_id: int, category_id: int):
         ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
         if not ad:
@@ -66,3 +84,39 @@ class AdService:
         ad = self.get_ad_or_404(ad_id)
         self.db.delete(ad)
         self.db.commit()
+
+    def add_images_to_ad(self, ad_id: int, image_urls: List[str]):
+        """Add multiple images to an existing ad"""
+        ad = self.get_ad_or_404(ad_id)
+
+        if ad.image_urls is None:
+            ad.image_urls = []
+
+        ad.image_urls.extend(image_urls)
+        self.db.commit()
+        self.db.refresh(ad)
+        return ad
+
+    def remove_image_from_ad(self, ad_id: int, image_url: str):
+        """Remove a specific image from an ad"""
+        ad = self.get_ad_or_404(ad_id)
+
+        if ad.image_urls and image_url in ad.image_urls:
+            ad.image_urls.remove(image_url)
+            self.db.commit()
+            self.db.refresh(ad)
+
+        return ad
+
+    def get_ads_by_location(self, latitude: float, longitude: float, radius_km: float = 5.0):
+        """Get ads within a certain radius from given coordinates"""
+        # Simple distance calculation (for more accurate results, use PostGIS)
+        lat_diff = radius_km / 111.0  # Rough conversion: 1 degree ≈ 111 km
+        lng_diff = radius_km / (111.0 * abs(latitude))
+
+        query = self.db.query(Ad).filter(
+            Ad.latitude.between(latitude - lat_diff, latitude + lat_diff),
+            Ad.longitude.between(longitude - lng_diff, longitude + lng_diff)
+        )
+
+        return query.all()
