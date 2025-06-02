@@ -44,7 +44,7 @@ def upgrade() -> None:
     op.add_column('ad', sa.Column('kitchen_area', sa.Float(), nullable=True))
     op.add_column('ad', sa.Column('ceiling_height', sa.Float(), nullable=True))
     op.add_column('ad', sa.Column('image_urls', postgresql.ARRAY(sa.String()), nullable=True))
-    op.add_column('ad', sa.Column('currency', sa.String(), nullable=False))
+    op.add_column('ad', sa.Column('currency', sa.String(), nullable=False, server_default='USD'))
     op.add_column('ad', sa.Column('commission_from_buyer', sa.Boolean(), nullable=True))
     op.add_column('ad', sa.Column('contact_type', contact_type_enum, nullable=False))
     op.alter_column('ad', 'description',
