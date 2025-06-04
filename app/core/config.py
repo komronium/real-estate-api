@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ESKIZ_EMAIL: str
     ESKIZ_PASSWORD: SecretStr
 
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION_NAME: str = 'us-east-1'
+    AWS_S3_BUCKET_NAME: str
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'

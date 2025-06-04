@@ -1,20 +1,13 @@
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
 from typing import Optional, List
 from enum import Enum
 
 
 class DealType(str, Enum):
-    SALE = "sale"
-    RENT = "rent"
+    sale = "sale"
+    rent = "rent"
 
-
-class PropertyType(str, Enum):
-    YER_UCHASTKASI = "yer_uchastkasi"  # Land plot
-    HOVLI = "hovli"  # House
-    XONADON = "xonadon"  # Apartment
-    NOTURAR = "noturar"  # Commercial
-    SANOAT = "sanoat"  # Industrial
 
 
 class ContactType(str, Enum):
@@ -28,8 +21,8 @@ class AdBase(BaseModel):
     description: str = Field(..., min_length=40)
 
     # Deal and property type
-    deal_type: DealType = DealType.SALE
-    property_type: PropertyType
+    deal_type: DealType = DealType.sale
+    category_id: int
 
     # Location
     city: Optional[str] = None
@@ -85,7 +78,6 @@ class AdUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     deal_type: Optional[DealType] = None
-    property_type: Optional[PropertyType] = None
 
     # Location
     city: Optional[str] = None
@@ -138,6 +130,13 @@ class AdUpdate(BaseModel):
 class AdOut(AdBase):
     id: int
     user_id: UUID
+
+    class Config:
+        from_attributes = True
+
+
+class UploadFileResponse(BaseModel):
+    url: HttpUrl
 
     class Config:
         from_attributes = True

@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Query
+from fastapi import APIRouter, Depends, status, HTTPException, Query, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.api.deps import get_db, get_current_user
 from app.schemas.category import AdCategoryUpdate
 from app.services.ad_service import AdService
-from app.schemas.ad import AdCreate, AdOut, AdUpdate, DealType, PropertyType
+from app.schemas.ad import AdCreate, AdOut, AdUpdate, DealType, UploadFileResponse
 from app.models.user import User
 
 router = APIRouter(prefix="/api/v1/ads", tags=["Ads"])
@@ -27,7 +27,6 @@ def list_ads(
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     deal_type: Optional[DealType] = None,
-    property_type: Optional[PropertyType] = None,
     rooms_count: Optional[int] = None,
     city: Optional[str] = None,
     db: Session = Depends(get_db)
@@ -38,7 +37,6 @@ def list_ads(
         min_price=min_price,
         max_price=max_price,
         deal_type=deal_type,
-        property_type=property_type,
         rooms_count=rooms_count,
         city=city
     )
@@ -128,3 +126,13 @@ def delete_ad(
     if ad.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
     ad_service.delete_ad(ad_id)
+
+
+@router.post("/upload-image", response_model=UploadFileResponse,status_code=status.HTTP_201_CREATED)
+async def upload_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    return await ad_service.upload_file(file)

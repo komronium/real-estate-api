@@ -1,9 +1,13 @@
-from fastapi import HTTPException
+import uuid
+import boto3
+from fastapi import HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional, List
 
-from app.models.ad import Ad, DealType, PropertyType, ContactType
+from app.models.ad import Ad, DealType, ContactType
 from app.schemas.ad import AdCreate, AdUpdate
+
+from app.core.config import settings
 
 
 class AdService:
@@ -17,7 +21,6 @@ class AdService:
             min_price: Optional[int] = None,
             max_price: Optional[int] = None,
             deal_type: Optional[DealType] = None,
-            property_type: Optional[PropertyType] = None,
             rooms_count: Optional[int] = None,
             city: Optional[str] = None
     ):
@@ -34,9 +37,6 @@ class AdService:
         if deal_type is not None:
             query = query.filter(Ad.deal_type == deal_type)
 
-        if property_type is not None:
-            query = query.filter(Ad.property_type == property_type)
-
         if rooms_count is not None:
             query = query.filter(Ad.rooms_count == rooms_count)
 
@@ -52,6 +52,10 @@ class AdService:
         return ad
 
     def create_ad(self, ad_data: AdCreate, user_id: int):
+        category_id = ad_data.category_id
+        if not category_id:
+            raise HTTPException(status_code=400, detail="Category ID is required")
+        
         new_ad = Ad(**ad_data.model_dump(), user_id=user_id)
         self.db.add(new_ad)
         self.db.commit()
@@ -120,3 +124,27 @@ class AdService:
         )
 
         return query.all()
+    
+    async def upload_file(self, file: UploadFile = File(...)):
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION_NAME
+        )
+
+        file_extension = file.filename.split(".")[-1]
+        s3_file_name = f"{uuid.uuid4()}.{file_extension}"
+
+
+        res = s3_client.upload_fileobj(
+            file.file,
+            settings.AWS_S3_BUCKET_NAME,
+            s3_file_name,
+            ExtraArgs={'ACL': 'public-read'}
+        )
+        print('--------------', res)
+
+        return {
+            'url':f"https://{settings.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/{s3_file_name}"
+        }

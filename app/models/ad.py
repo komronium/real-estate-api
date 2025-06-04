@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, Boolean, Enum
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, Boolean, Enum, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from app.db.base import Base
@@ -6,21 +6,13 @@ import enum
 
 
 class DealType(enum.Enum):
-    SALE = "sale"
-    RENT = "rent"
-
-
-class PropertyType(enum.Enum):
-    YER_UCHASTKASI = "yer_uchastkasi"
-    HOVLI = "hovli"
-    XONADON = "xonadon"
-    NOTURAR = "noturar"
-    SANOAT = "sanoat"
+    sale = "sale"
+    rent = "rent"
 
 
 class ContactType(enum.Enum):
-    REALTOR = "realtor"
-    OWNER = "owner"
+    realtor = "realtor"
+    owner = "owner"
 
 
 class Ad(Base):
@@ -29,8 +21,7 @@ class Ad(Base):
     description = Column(Text, nullable=False)
 
     # Deal and property type
-    deal_type = Column(Enum(DealType), nullable=False, default=DealType.SALE)
-    property_type = Column(Enum(PropertyType), nullable=False)
+    deal_type = Column(Enum(DealType), nullable=False, default=DealType.sale)
 
     # Location
     city = Column(String, nullable=True)
@@ -64,14 +55,14 @@ class Ad(Base):
     commission_from_buyer = Column(Boolean, default=False)
 
     # Contact information
-    contact_type = Column(Enum(ContactType), nullable=False, default=ContactType.REALTOR)
+    contact_type = Column(Enum(ContactType), nullable=False, default=ContactType.realtor)
     full_name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
     # Relationships
-    user_id = Column(Integer, ForeignKey("user.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
     user = relationship("User", back_populates="ads")
 
-    category_id = Column(Integer, ForeignKey("category.id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("category.id"), nullable=False)
     category = relationship("Category", back_populates="ads")
