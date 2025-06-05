@@ -44,6 +44,10 @@ class AdService:
             query = query.filter(Ad.city.ilike(f"%{city}%"))
 
         return query.all()
+    
+    def get_ads_by_user(self, user_id: int):
+        """Get all ads created by a specific user"""
+        return self.db.query(Ad).filter(Ad.user_id == user_id).all()
 
     def get_ad_or_404(self, ad_id: int):
         ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
@@ -137,14 +141,12 @@ class AdService:
         s3_file_name = f"{uuid.uuid4()}.{file_extension}"
 
 
-        res = s3_client.upload_fileobj(
+        s3_client.upload_fileobj(
             file.file,
             settings.AWS_S3_BUCKET_NAME,
             s3_file_name,
             ExtraArgs={'ACL': 'public-read'}
         )
-        print('--------------', res)
-
         return {
             'url':f"https://{settings.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/{s3_file_name}"
         }

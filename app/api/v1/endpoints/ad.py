@@ -53,6 +53,15 @@ def get_nearby_ads(
     return ad_service.get_ads_by_location(latitude, longitude, radius_km)
 
 
+@router.get('/mine', response_model=List[AdOut])
+def get_my_ads(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    return ad_service.get_ads_by_user(current_user.id)
+
+
 @router.get("/{ad_id}", response_model=AdOut)
 def get_ad(ad_id: int, db: Session = Depends(get_db)):
     ad_service = AdService(db)
