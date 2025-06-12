@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
@@ -57,7 +58,7 @@ async def create_admin(
     }
 )
 async def get_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db)
 ):
     user_service = UserService(db)
@@ -75,7 +76,7 @@ async def get_user(
     }
 )
 async def update_user(
-    user_id: int,
+    user_id: UUID,
     user_data: UserUpdate,
     db: Session = Depends(get_db)
 ) -> User:
@@ -93,7 +94,7 @@ async def update_user(
     }
 )
 async def delete_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db)
 ) -> None:
     user_service = UserService(db)
