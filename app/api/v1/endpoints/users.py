@@ -10,7 +10,6 @@ from app.services.user_service import UserService
 router = APIRouter(
     prefix='/api/v1/users',
     tags=['Users'],
-    dependencies=[Depends(get_admin_user)]
 )
 
 
@@ -18,6 +17,7 @@ router = APIRouter(
     '/',
     response_model=List[UserOut],
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_admin_user)],
     responses={
         401: {'description': 'Unauthorized'}
     }
@@ -33,6 +33,7 @@ async def list_users(
     '/',
     response_model=UserOut,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_admin_user)],
     responses={
         400: {'description': 'Invalid credentials'},
         401: {'description': 'Unauthorized'}
@@ -67,6 +68,7 @@ async def get_user(
     '/{user_id}',
     response_model=UserOut,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_admin_user)],
     responses={
         401: {'description': 'Unauthorized'},
         404: {'description': 'Not found'}
@@ -84,6 +86,7 @@ async def update_user(
 @router.delete(
     '/{user_id}',
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_admin_user)],
     responses={
         401: {'description': 'Unauthorized'},
         404: {'description': 'Not found'}

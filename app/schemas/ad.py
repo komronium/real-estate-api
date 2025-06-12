@@ -29,8 +29,8 @@ class AdBase(BaseModel):
     complex_name: Optional[str] = None
     street: Optional[str] = None
     house_number: Optional[str] = None
-    latitude: float = Field(..., ge=-90, le=90, examples=[41.335752])
-    longitude: float = Field(..., ge=-180, le=180, examples=[69.212143])
+    latitude: float = Field(..., ge=-90, le=90, examples=[41.33575242335])
+    longitude: float = Field(..., ge=-180, le=180, examples=[69.21214325235])
 
     # Property characteristics
     floors_in_building: Optional[int] = None
@@ -61,7 +61,7 @@ class AdBase(BaseModel):
 
     @field_validator('latitude', 'longitude')
     def round_coordinates(cls, v):
-        return round(float(v), 6)
+        return round(float(v), 10)
 
     @field_validator('total_area', 'living_area', 'kitchen_area', 'ceiling_height')
     def round_areas(cls, v):
