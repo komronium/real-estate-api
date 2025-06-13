@@ -9,7 +9,6 @@ class DealType(str, Enum):
     rent = "rent"
 
 
-
 class ContactType(str, Enum):
     REALTOR = "realtor"
     OWNER = "owner"

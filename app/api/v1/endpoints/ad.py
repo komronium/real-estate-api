@@ -11,6 +11,14 @@ from app.models.user import User
 router = APIRouter(prefix="/api/v1/ads", tags=["Ads"])
 
 
+@router.get("/search", response_model=List[AdOut])
+def search_ads(
+    q: str = Query(..., min_length=1, description="Search string"),
+    db: Session = Depends(get_db)
+):
+    ad_service = AdService(db)
+    return ad_service.search_ads(q)
+
 @router.post("/", response_model=AdOut, status_code=status.HTTP_201_CREATED)
 def create_ad(
     ad_data: AdCreate,

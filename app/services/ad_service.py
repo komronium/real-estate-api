@@ -45,6 +45,17 @@ class AdService:
 
         return query.all()
     
+    def search_ads(self, query: str):
+        if not query:
+            return []
+        like_query = f"%{query}%"
+        return self.db.query(Ad).filter(
+            (Ad.title.ilike(like_query)) |
+            (Ad.description.ilike(like_query)) |
+            (Ad.city.ilike(like_query)) |
+            (Ad.street.ilike(like_query))
+        ).all()
+    
     def get_ads_by_user(self, user_id: int):
         """Get all ads created by a specific user"""
         return self.db.query(Ad).filter(Ad.user_id == user_id).all()
