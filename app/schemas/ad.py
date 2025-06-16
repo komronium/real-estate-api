@@ -3,6 +3,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
 from typing import Optional, List
 from enum import Enum
 
+from app.schemas.category import CategoryOut
+
 
 class DealType(str, Enum):
     sale = "sale"
@@ -129,6 +131,7 @@ class AdUpdate(BaseModel):
 class AdOut(AdBase):
     id: int
     user_id: UUID
+    category: CategoryOut
 
     class Config:
         from_attributes = True

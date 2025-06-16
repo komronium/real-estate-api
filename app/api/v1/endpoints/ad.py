@@ -36,7 +36,8 @@ def list_ads(
     max_price: Optional[int] = None,
     deal_type: Optional[DealType] = None,
     rooms_count: Optional[int] = None,
-    city: Optional[str] = None,
+    min_area: Optional[float] = None,
+    max_area: Optional[float] = None,
     db: Session = Depends(get_db)
 ):
     ad_service = AdService(db)
@@ -46,7 +47,8 @@ def list_ads(
         max_price=max_price,
         deal_type=deal_type,
         rooms_count=rooms_count,
-        city=city
+        min_area=min_area,
+        max_area=max_area   
     )
 
 

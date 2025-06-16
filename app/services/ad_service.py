@@ -22,7 +22,8 @@ class AdService:
             max_price: Optional[int] = None,
             deal_type: Optional[DealType] = None,
             rooms_count: Optional[int] = None,
-            city: Optional[str] = None
+            min_area: Optional[float] = None,
+            max_area: Optional[float] = None,
     ):
         query = self.db.query(Ad)
 
@@ -40,8 +41,11 @@ class AdService:
         if rooms_count is not None:
             query = query.filter(Ad.rooms_count == rooms_count)
 
-        if city is not None:
-            query = query.filter(Ad.city.ilike(f"%{city}%"))
+        if min_area is not None:
+            query = query.filter(Ad.total_area >= min_area)
+
+        if max_area is not None:
+            query = query.filter(Ad.total_area <= max_area)
 
         return query.all()
     
