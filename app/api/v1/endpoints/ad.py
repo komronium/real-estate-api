@@ -36,6 +36,7 @@ def list_ads(
     max_price: Optional[int] = None,
     deal_type: Optional[DealType] = None,
     rooms_count: Optional[int] = None,
+    city: Optional[str] = None,
     min_area: Optional[float] = None,
     max_area: Optional[float] = None,
     db: Session = Depends(get_db)

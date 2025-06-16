@@ -23,9 +23,7 @@ router = APIRouter(
         401: {'description': 'Unauthorized'}
     }
 )
-async def list_users(
-        db: Session = Depends(get_db)
-) -> List[UserOut]:
+async def list_users(db: Session = Depends(get_db)) -> List[UserOut]:
     user_service = UserService(db)
     return await user_service.get_all_users()
 
