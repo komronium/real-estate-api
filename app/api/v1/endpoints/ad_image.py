@@ -1,0 +1,48 @@
+from fastapi import APIRouter, Depends, status, HTTPException, Query, File, UploadFile
+from sqlalchemy.orm import Session
+from typing import List
+
+from app.api.deps import get_db, get_current_user
+from app.services.ad_service import AdService
+from app.schemas.ad import AdOut, UploadFileResponse
+from app.models.user import User
+
+router = APIRouter(prefix="/api/v1/ads", tags=["Ad Images"])
+
+
+@router.post("/{ad_id}/images", response_model=AdOut)
+def add_images_to_ad(
+    ad_id: int,
+    image_urls: List[str],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
+    if ad.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return ad_service.add_images_to_ad(ad_id, image_urls)
+
+
+@router.delete("/{ad_id}/images", response_model=AdOut)
+def remove_image_from_ad(
+    ad_id: int,
+    image_url: str = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    ad = ad_service.get_ad_or_404(ad_id)
+    if ad.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return ad_service.remove_image_from_ad(ad_id, image_url)
+
+
+@router.post("/upload-image", response_model=UploadFileResponse,status_code=status.HTTP_201_CREATED)
+async def upload_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ad_service = AdService(db)
+    return await ad_service.upload_file(file)

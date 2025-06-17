@@ -10,6 +10,7 @@ from app.models.user import *
 from app.models.otp import *
 from app.models.ad import *
 from app.models.category import *
+from app.models.comment import *
 
 config = context.config
 

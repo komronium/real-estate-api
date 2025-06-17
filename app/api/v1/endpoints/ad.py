@@ -107,34 +107,6 @@ def update_ad_category(
     return ad_service.update_ad_category(ad_id, category_update.category_id)
 
 
-@router.post("/{ad_id}/images", response_model=AdOut)
-def add_images_to_ad(
-    ad_id: int,
-    image_urls: List[str],
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    ad_service = AdService(db)
-    ad = ad_service.get_ad_or_404(ad_id)
-    if ad.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    return ad_service.add_images_to_ad(ad_id, image_urls)
-
-
-@router.delete("/{ad_id}/images", response_model=AdOut)
-def remove_image_from_ad(
-    ad_id: int,
-    image_url: str = Query(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    ad_service = AdService(db)
-    ad = ad_service.get_ad_or_404(ad_id)
-    if ad.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    return ad_service.remove_image_from_ad(ad_id, image_url)
-
-
 @router.delete("/{ad_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_ad(
     ad_id: int,
@@ -147,12 +119,3 @@ def delete_ad(
         raise HTTPException(status_code=403, detail="Not authorized")
     ad_service.delete_ad(ad_id)
 
-
-@router.post("/upload-image", response_model=UploadFileResponse,status_code=status.HTTP_201_CREATED)
-async def upload_image(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    ad_service = AdService(db)
-    return await ad_service.upload_file(file)

@@ -66,3 +66,5 @@ class Ad(Base):
 
     category_id = Column(Integer, ForeignKey("category.id"), nullable=False)
     category = relationship("Category", back_populates="ads")
+
+    comments = relationship("Comment", back_populates="ad", cascade="all, delete")

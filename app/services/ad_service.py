@@ -4,7 +4,7 @@ from fastapi import HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional, List
 
-from app.models.ad import Ad, DealType, ContactType
+from app.models.ad import Ad, DealType
 from app.schemas.ad import AdCreate, AdUpdate
 
 from app.core.config import settings
