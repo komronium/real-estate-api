@@ -68,3 +68,4 @@ class Ad(Base):
     category = relationship("Category", back_populates="ads")
 
     comments = relationship("Comment", back_populates="ad", cascade="all, delete")
+    popular_ad = relationship("PopularAd", uselist=False, back_populates="ad")

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, users, profile, otp, ad, ad_image, category, comment
+from app.api.v1.endpoints import auth, users, profile, otp, ad, ad_image, category, comment, popular_ads
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(ad.router)
 api_router.include_router(ad_image.router)
 api_router.include_router(category.router)
 api_router.include_router(comment.router)
+api_router.include_router(popular_ads.router)
