@@ -17,6 +17,7 @@ class AdService:
 
     def get_all_ads(
             self,
+            search_query: Optional[str] = None,
             category_id: Optional[int] = None,
             min_price: Optional[int] = None,
             max_price: Optional[int] = None,
@@ -27,6 +28,16 @@ class AdService:
             max_area: Optional[float] = None,
     ):
         query = self.db.query(Ad)
+
+        # Apply search filter if search query is provided
+        if search_query:
+            like_query = f"%{search_query}%"
+            query = query.filter(
+                (Ad.title.ilike(like_query)) |
+                (Ad.description.ilike(like_query)) |
+                (Ad.city.ilike(like_query)) |
+                (Ad.street.ilike(like_query))
+            )
 
         if category_id is not None:
             query = query.filter(Ad.category_id == category_id)
@@ -52,18 +63,7 @@ class AdService:
             query = query.filter(Ad.total_area <= max_area)
 
         return query.all()
-    
-    def search_ads(self, query: str):
-        if not query:
-            return []
-        like_query = f"%{query}%"
-        return self.db.query(Ad).filter(
-            (Ad.title.ilike(like_query)) |
-            (Ad.description.ilike(like_query)) |
-            (Ad.city.ilike(like_query)) |
-            (Ad.street.ilike(like_query))
-        ).all()
-    
+
     def get_ads_by_user(self, user_id: int):
         """Get all ads created by a specific user"""
         return self.db.query(Ad).filter(Ad.user_id == user_id).all()
@@ -78,7 +78,7 @@ class AdService:
         category_id = ad_data.category_id
         if not category_id:
             raise HTTPException(status_code=400, detail="Category ID is required")
-        
+
         new_ad = Ad(**ad_data.model_dump(), user_id=user_id)
         self.db.add(new_ad)
         self.db.commit()
@@ -147,7 +147,7 @@ class AdService:
         )
 
         return query.all()
-    
+
     async def upload_file(self, file: UploadFile = File(...)):
         s3_client = boto3.client(
             "s3",
@@ -159,7 +159,6 @@ class AdService:
         file_extension = file.filename.split(".")[-1]
         s3_file_name = f"{uuid.uuid4()}.{file_extension}"
 
-
         s3_client.upload_fileobj(
             file.file,
             settings.AWS_S3_BUCKET_NAME,
@@ -167,5 +166,5 @@ class AdService:
             ExtraArgs={'ACL': 'public-read'}
         )
         return {
-            'url':f"https://{settings.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/{s3_file_name}"
+            'url': f"https://{settings.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/{s3_file_name}"
         }
