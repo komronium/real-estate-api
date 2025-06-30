@@ -6,7 +6,7 @@ from app.api.deps import get_db, get_current_user
 from app.schemas.category import AdCategoryUpdate
 from app.services.ad_service import AdService
 from app.schemas.ad import AdCreate, AdOut, AdUpdate, DealType, UploadFileResponse
-from app.models.user import User
+from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/api/v1/ads", tags=["Ads"])
 
@@ -111,6 +111,6 @@ def delete_ad(
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
-    if ad.user_id != current_user.id and current_user.role != Role.ADMIN:
+    if ad.user_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized")
     ad_service.delete_ad(ad_id)
