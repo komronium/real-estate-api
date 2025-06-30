@@ -130,7 +130,7 @@ class AdUpdate(BaseModel):
 
 class AdOut(AdBase):
     id: int
-    user_id: UUID
+    user_id: Optional[UUID] = None
     category: CategoryOut
 
     class Config:

@@ -115,7 +115,7 @@ def delete_ad(
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
-    if ad.user_id != current_user.id:
+    if ad.user_id != current_user.id and current_user.role != Role.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized")
     ad_service.delete_ad(ad_id)
 
