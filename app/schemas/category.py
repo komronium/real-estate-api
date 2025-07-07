@@ -12,13 +12,13 @@ class CategoryBase(BaseModel):
     def get_names(self, names):
         return {lang.value: name for lang, name in names.items()}
 
-    @model_serializer(mode='plain')
-    def serialize_category(self, handler):
-        print('---' * 20)
-        return {
-            "parent_id": self.parent_id,
-            "names": {lang.value: name for lang, name in self.names.items()}
-        }
+    # @model_serializer(mode='plain')
+    # def serialize_category(self, handler):
+    #     print('---' * 20)
+    #     return {
+    #         "parent_id": self.parent_id,
+    #         "names": {lang.value: name for lang, name in self.names.items()}
+    #     }
 
 
 class CategoryCreate(CategoryBase):
