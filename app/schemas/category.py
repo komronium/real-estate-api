@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, model_serializer
 from typing import Optional, List, Dict
 
 from app.models.category import LanguageEnum
@@ -11,6 +11,13 @@ class CategoryBase(BaseModel):
     @field_serializer('names', mode='plain')
     def get_names(self, names):
         return {lang.value: name for lang, name in names.items()}
+
+    @model_serializer(mode='wrap')
+    def serialize_category(self):
+        return {
+            "parent_id": self.parent_id,
+            "names": {lang.value: name for lang, name in self.names.items()}
+        }
 
 
 class CategoryCreate(CategoryBase):
