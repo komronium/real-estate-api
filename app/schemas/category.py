@@ -10,7 +10,7 @@ class CategoryBase(BaseModel):
 
     @field_serializer('names', mode='plain')
     def get_names(self, names):
-        return {t.lang: t.name for t in names}
+        return {lang.value: name for lang, name in names.items()}
 
 
 class CategoryCreate(CategoryBase):
