@@ -43,7 +43,16 @@ class CategoryService:
 
     @staticmethod
     def get_all_categories(db: Session):
-        return db.query(Category).all()
+        categories = db.query(Category).all()
+        result = []
+        for category in categories:
+            names = {t.lang.value: t.name for t in category.names}
+            result.append({
+                "id": category.id,
+                "names": names,
+                "parent_id": category.parent_id,
+            })
+        return result
 
     @staticmethod
     def get_root_categories(db: Session):
