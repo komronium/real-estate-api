@@ -43,16 +43,7 @@ class CategoryService:
 
     @staticmethod
     def get_all_categories(db: Session):
-        categories = db.query(Category).all()
-        result = []
-        for category in categories:
-            names = {t.lang: t.name for t in category.names}
-            result.append({
-                "id": category.id,
-                "names": names,
-                "parent_id": category.parent_id,
-            })
-        return result
+        return db.query(Category).all()
 
     @staticmethod
     def get_root_categories(db: Session):
@@ -64,12 +55,7 @@ class CategoryService:
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
 
-        names = {t.lang: t.name for t in category.names}
-        return {
-            "id": category.id,
-            "names": names,
-            "parent_id": category.parent_id,
-        }
+        return category
 
     @staticmethod
     def update_category(category_id: int, category_data: CategoryUpdate, current_user: User, db: Session):

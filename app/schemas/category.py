@@ -1,21 +1,16 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_serializer
 from typing import Optional, List, Dict
 
 from app.models.category import LanguageEnum
 
 
-class CategoryNameBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    lang: LanguageEnum
-
-    class Config:
-        from_attributes = True
-
-
-
 class CategoryBase(BaseModel):
     parent_id: Optional[int] = Field(gt=0)
     names: Dict[LanguageEnum, str]
+
+    @field_serializer('names', mode='plain')
+    def get_names(self, obj):
+        return {t.lang: t.name for t in obj.names}
 
 
 class CategoryCreate(CategoryBase):
