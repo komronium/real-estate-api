@@ -23,7 +23,7 @@ def create_category(
 
 @router.get("/", response_model=List[CategoryOut])
 def list_categories(db: Session = Depends(get_db)):
-    return CategoryService.get_all_categories(db)
+    return CategoryService.get_all_categories(db).model_dump_json()
 
 
 @router.get("/root", response_model=List[CategoryWithChildren])
