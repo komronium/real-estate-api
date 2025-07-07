@@ -46,7 +46,7 @@ class CategoryService:
         categories = db.query(Category).all()
         result = []
         for category in categories:
-            names = {t.lang.value: t.name for t in category.names}
+            names = {t.lang: t.name for t in category.names}
             result.append({
                 "id": category.id,
                 "names": names,
