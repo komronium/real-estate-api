@@ -1,10 +1,21 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict
+
+from app.models.category import LanguageEnum
+
+
+class CategoryNameBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    lang: LanguageEnum
+
+    class Config:
+        from_attributes = True
+
 
 
 class CategoryBase(BaseModel):
-    name: str
     parent_id: Optional[int] = Field(gt=0)
+    names: Dict[LanguageEnum, str]
 
 
 class CategoryCreate(CategoryBase):
@@ -28,9 +39,6 @@ class CategoryWithChildren(CategoryOut):
     class Config:
         from_attributes = True
 
-
- # for recursive Pydantic model (: Kamron
- # but without this, it worked. What is the difference?
 
 CategoryWithChildren.model_rebuild()
 

@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models.category import Category
+from app.models.category import Category, CategoryName
 from app.models.user import User, UserRole
 from app.schemas.category import CategoryCreate, CategoryUpdate
 
@@ -25,8 +25,18 @@ class CategoryService:
             if not parent:
                 raise HTTPException(status_code=404, detail="Parent category not found")
 
-        new_category = Category(**category_data.model_dump())
+        new_category = Category(parent_id=category_data.parent_id)
         db.add(new_category)
+        db.commit()
+
+        for lang, name in category_data.names.items():
+            category_name = CategoryName(
+                category_id=new_category.id,
+                lang=lang,
+                name=name
+            )
+            db.add(category_name)
+
         db.commit()
         db.refresh(new_category)
         return new_category
