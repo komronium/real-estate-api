@@ -8,7 +8,7 @@ class CategoryBase(BaseModel):
     parent_id: Optional[int] = Field(gt=0)
     names: Dict[LanguageEnum, str]
 
-    @field_serializer('names', mode='wrap')
+    @field_serializer('names', mode='plain')
     def get_names(self, names):
         return {t.lang: t.name for t in names}
 
