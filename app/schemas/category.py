@@ -32,10 +32,6 @@ class CategoryUpdate(CategoryBase):
 class CategoryOut(CategoryBase):
     id: int
 
-    @field_serializer('names', mode='plain')
-    def get_names(self, names):
-        return {lang.value: name for lang, name in names.items()}
-
     class Config:
         from_attributes = True
 
