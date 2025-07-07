@@ -6,9 +6,11 @@ from app.models.category import LanguageEnum
 
 class CategoryBase(BaseModel):
     parent_id: Optional[int] = Field(gt=0)
+    names: Dict
 
     @field_serializer('names', mode='plain')
     def get_names(self, obj):
+        print('---', obj)
         return {t.lang: t.name for t in obj.names}
 
 
