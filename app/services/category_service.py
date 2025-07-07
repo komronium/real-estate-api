@@ -65,8 +65,11 @@ class CategoryService:
             raise HTTPException(status_code=404, detail="Category not found")
 
         names = {t.lang: t.name for t in category.names}
-        category.names = names
-        return category
+        return {
+            "id": category.id,
+            "names": names,
+            "parent_id": category.parent_id,
+        }
 
     @staticmethod
     def update_category(category_id: int, category_data: CategoryUpdate, current_user: User, db: Session):
