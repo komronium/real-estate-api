@@ -63,6 +63,9 @@ class CategoryService:
         category = db.query(Category).filter(Category.id == category_id).first()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
+
+        names = {t.lang: t.name for t in category.names}
+        category.names = names
         return category
 
     @staticmethod
