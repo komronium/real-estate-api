@@ -18,7 +18,7 @@ class ContactType(enum.Enum):
 class Ad(Base):
     # Basic information
     title = Column(String, nullable=False)
-    description = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
 
     # Deal and property type
     deal_type = Column(Enum(DealType), nullable=False, default=DealType.sale)

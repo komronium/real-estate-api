@@ -19,7 +19,7 @@ class ContactType(str, Enum):
 class AdBase(BaseModel):
     # Basic information
     title: str
-    description: str = Field(..., min_length=40)
+    description: Optional[str] = None
 
     # Deal and property type
     deal_type: DealType = DealType.sale
