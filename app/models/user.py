@@ -26,3 +26,4 @@ class User(Base):
     ads = relationship('Ad', back_populates='user')
     otps = relationship('OTP', back_populates='user')
     comments = relationship("Comment", back_populates="user", cascade="all, delete")
+    popular_ads = relationship("PopularAd", back_populates="admin")

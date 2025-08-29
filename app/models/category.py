@@ -12,7 +12,11 @@ class LanguageEnum(str, Enum):
 
 
 class Category(Base):
+    # Primary key
+    id = Column(Integer, primary_key=True, index=True)
+    
     parent_id = Column(Integer, ForeignKey("category.id"), nullable=True)
+    icon = Column(String, nullable=True, default=None)
 
     # Relationships
     parent = relationship("Category", remote_side="Category.id", backref="subcategories")
@@ -21,6 +25,9 @@ class Category(Base):
 
 
 class CategoryName(Base):
+    # Primary key
+    id = Column(Integer, primary_key=True, index=True)
+    
     name = Column(String, nullable=False)
     lang = Column(String, nullable=False, default=LanguageEnum.uz.value)
 

@@ -9,4 +9,4 @@ class Comment(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
 
     ad = relationship("Ad", back_populates="comments")
-    user = relationship("User")
+    user = relationship("User", back_populates="comments")

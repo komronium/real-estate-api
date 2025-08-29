@@ -16,7 +16,7 @@ class UserService:
         return self.db.query(User).all()
 
     async def create_admin(self, username: str, password: str) -> User:
-        user = self.get_by_username(username=username)
+        user = await self.get_by_username(username=username)
         if user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Username already exists')
 

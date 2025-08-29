@@ -5,8 +5,9 @@ from app.models.category import LanguageEnum
 
 
 class CategoryBase(BaseModel):
-    parent_id: Optional[int] = Field(gt=0)
+    parent_id: Optional[int] = None
     names: Any
+    icon: Optional[str] = Field(None, description="S3 URL or path for category icon")
 
     @field_serializer('names', mode='plain')
     def get_names(self, names):

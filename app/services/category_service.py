@@ -1,9 +1,10 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.orm import Session
 
 from app.models.category import Category, CategoryName
 from app.models.user import User, UserRole
 from app.schemas.category import CategoryCreate, CategoryUpdate
+from app.utils.s3_upload import s3_service
 
 
 class CategoryService:
@@ -17,6 +18,85 @@ class CategoryService:
         return current_user
 
     @staticmethod
+    async def upload_category_icon(category_id: int, icon_file: UploadFile, current_user: User, db: Session):
+        """
+        Upload icon for a specific category
+        """
+        CategoryService.verify_admin(current_user)
+        
+        # Verify category exists
+        category = db.query(Category).filter(Category.id == category_id).first()
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        
+        # Validate file
+        if not s3_service.is_valid_image(icon_file):
+            raise HTTPException(
+                status_code=400, 
+                detail="Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed"
+            )
+        
+        # Check file size (max 5MB)
+        if s3_service.get_file_size_mb(icon_file) > 5:
+            raise HTTPException(
+                status_code=400,
+                detail="File size too large. Maximum size is 5MB"
+            )
+        
+        try:
+            # Delete old icon if exists
+            if category.icon:
+                await s3_service.delete_file(category.icon)
+            
+            # Upload new icon
+            icon_url = await s3_service.upload_file(icon_file, folder="category_icons")
+            
+            # Update category with new icon URL
+            category.icon = icon_url
+            db.commit()
+            db.refresh(category)
+            
+            return category
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to upload icon: {str(e)}"
+            )
+
+    @staticmethod
+    async def delete_category_icon(category_id: int, current_user: User, db: Session):
+        """
+        Delete icon for a specific category
+        """
+        CategoryService.verify_admin(current_user)
+        
+        # Verify category exists
+        category = db.query(Category).filter(Category.id == category_id).first()
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        
+        if not category.icon:
+            raise HTTPException(status_code=400, detail="Category has no icon to delete")
+        
+        try:
+            # Delete from S3
+            await s3_service.delete_file(category.icon)
+            
+            # Remove icon URL from category
+            category.icon = None
+            db.commit()
+            db.refresh(category)
+            
+            return {"message": "Icon deleted successfully"}
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to delete icon: {str(e)}"
+            )
+
+    @staticmethod
     def create_category(category_data: CategoryCreate, current_user: User, db: Session):
         CategoryService.verify_admin(current_user)
 
@@ -25,7 +105,10 @@ class CategoryService:
             if not parent:
                 raise HTTPException(status_code=404, detail="Parent category not found")
 
-        new_category = Category(parent_id=category_data.parent_id)
+        new_category = Category(
+            parent_id=category_data.parent_id,
+            icon=category_data.icon
+        )
         db.add(new_category)
         db.commit()
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -19,6 +19,31 @@ def create_category(
         current_user: User = Depends(get_current_user)
 ):
     return CategoryService.create_category(category, current_user, db)
+
+
+@router.post("/{category_id}/icon", response_model=CategoryOut)
+async def upload_category_icon(
+        category_id: int,
+        icon: UploadFile = File(...),
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Upload icon for a category
+    """
+    return await CategoryService.upload_category_icon(category_id, icon, current_user, db)
+
+
+@router.delete("/{category_id}/icon")
+async def delete_category_icon(
+        category_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Delete icon for a category
+    """
+    return await CategoryService.delete_category_icon(category_id, current_user, db)
 
 
 @router.get("/", response_model=List[CategoryOut])
