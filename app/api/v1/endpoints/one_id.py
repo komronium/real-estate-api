@@ -74,7 +74,6 @@ async def verify_with_one_id(
             id=updated_user.id,
             name=updated_user.name,
             username=updated_user.username,
-            email=updated_user.email,
             phone_number=updated_user.phone_number,
             is_active=updated_user.is_active,
             is_verified=updated_user.is_verified,
