@@ -59,7 +59,6 @@ class User(Base):
 
     phone_number = Column(String(length=16), unique=True, nullable=True)
     password = Column(String(length=64), nullable=True)
-    last_login = Column(DateTime(timezone=True), nullable=True)
     email = Column(String(length=255), unique=True, nullable=True, comment="Email address")
     is_verified = Column(Boolean, default=False, nullable=False, comment="User verification status")
 
