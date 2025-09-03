@@ -79,6 +79,7 @@ class UserWithOneIDResponse(BaseModel):
     email: Optional[str] = Field(None, description="Email")
     phone_number: Optional[str] = Field(None, description="Phone number")
     is_active: bool = Field(..., description="Active status")
+    is_verified: bool = Field(..., description="Verification status")
     role: str = Field(..., description="User role")
     last_login: Optional[datetime] = Field(None, description="Last login time")
     one_id_info: Optional[OneIDInfoResponse] = Field(None, description="One ID information")

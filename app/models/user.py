@@ -33,7 +33,7 @@ class OneIDInfo(Base):
     passport_number = Column(String(length=20), nullable=False, comment="Passport number from One ID")
     birth_date = Column(Date, nullable=False, comment="Birth date from One ID")
     user_type = Column(String(length=1), nullable=False, comment="User type (I-Individual, L-Legal)")
-    
+        
     # Tasdiqlash ma'lumotlari
     is_verified = Column(Boolean, default=False, nullable=False, comment="User verification status from One ID")
     validation_method = Column(String(length=255), nullable=True, comment="Verification methods used")
@@ -61,6 +61,7 @@ class User(Base):
     password = Column(String(length=64), nullable=True)
     last_login = Column(DateTime(timezone=True), nullable=True)
     email = Column(String(length=255), unique=True, nullable=True, comment="Email address")
+    is_verified = Column(Boolean, default=False, nullable=False, comment="User verification status")
 
     ads = relationship('Ad', back_populates='user')
     otps = relationship('OTP', back_populates='user')

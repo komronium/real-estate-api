@@ -229,6 +229,9 @@ class OneIDService:
         if not current_user.name:
             current_user.name = one_id_user.full_name
         
+        # Mark user as verified since they have One ID info
+        current_user.is_verified = True
+        
         self.db.commit()
         self.db.refresh(current_user)
         self.db.refresh(one_id_info)
