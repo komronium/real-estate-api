@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/auth", tags=["One ID Verification"])
 
 
-@router.post("/one_id")
+@router.post("/one_id", response_model=UserWithOneIDResponse)
 async def verify_with_one_id(
     request: OneIDCodeRequest,
     current_user: User = Depends(get_current_user),
