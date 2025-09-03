@@ -22,13 +22,13 @@ router = APIRouter(
         500: {'description': 'Internal Server Error'}
     }
 )
-def login_admin(
+async def login_admin(
     request: LoginAdminRequest,
     db: Session = Depends(get_db)
 ) -> Token:
     """Login admin user"""
     auth_service = AuthService(db)
-    return auth_service.login_admin(request)
+    return await auth_service.login_admin(request)
 
 
 @router.post(
