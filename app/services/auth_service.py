@@ -26,19 +26,12 @@ class AuthService:
             return None
         return user
 
-    def update_last_login(self, user: User) -> None:
-        """Update user's last login timestamp"""
-        user.last_login = datetime.now()
-        self.db.commit()
-        self.db.refresh(user)
-
     def login_admin(self, request: LoginAdminRequest) -> Token:
         """Login admin user and return access token"""
         user = self.authenticate_admin(request.username, request.password)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid credentials')
 
-        self.update_last_login(user)
         return self.generate_tokens(user)
 
     async def generate_tokens(self, user: User) -> Token:

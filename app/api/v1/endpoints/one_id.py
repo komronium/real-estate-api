@@ -79,7 +79,6 @@ async def verify_with_one_id(
             is_active=updated_user.is_active,
             is_verified=updated_user.is_verified,
             role=updated_user.role,
-            last_login=updated_user.last_login,
             one_id_info=one_id_info_response
         )
         
