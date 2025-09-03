@@ -76,7 +76,6 @@ class UserWithOneIDResponse(BaseModel):
     id: UUID = Field(..., description="User ID")
     name: Optional[str] = Field(None, description="User name")
     username: Optional[str] = Field(None, description="Username")
-    email: Optional[str] = Field(None, description="Email")
     phone_number: Optional[str] = Field(None, description="Phone number")
     is_active: bool = Field(..., description="Active status")
     is_verified: bool = Field(..., description="Verification status")
