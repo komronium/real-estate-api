@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.user import User
 from app.schemas.user import UserOut, UserUpdate
+from app.schemas.one_id import UserWithOneIDResponse
 from app.api.deps import get_db, get_current_user
 from app.services.user_service import UserService
 
@@ -12,7 +13,7 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=UserOut, status_code=status.HTTP_200_OK)
+@router.get('/', response_model=UserWithOneIDResponse, status_code=status.HTTP_200_OK)
 async def get_profile(
         current_user: User = Depends(get_current_user)
 ) -> UserOut:

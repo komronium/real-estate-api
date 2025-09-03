@@ -22,12 +22,13 @@ router = APIRouter(
         500: {'description': 'Internal Server Error'}
     }
 )
-async def login_admin(
+def login_admin(
     request: LoginAdminRequest,
     db: Session = Depends(get_db)
 ) -> Token:
+    """Login admin user"""
     auth_service = AuthService(db)
-    return await auth_service.login_admin(request)
+    return auth_service.login_admin(request)
 
 
 @router.post(
@@ -40,9 +41,10 @@ async def login_admin(
         500: {'description': 'Internal Server Error'}
     }
 )
-async def refresh_token(
+def refresh_token(
     request: RefreshTokenRequest,
     db: Session = Depends(get_db)
 ) -> Token:
+    """Refresh access token"""
     auth_service = AuthService(db)
-    return await auth_service.refresh_token(request.refresh_token)
+    return auth_service.refresh_token(request.refresh_token)

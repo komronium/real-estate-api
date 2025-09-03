@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Real Estate API"
     PROJECT_DESCRIPTION: str = "Real Estate API for managing properties, users, and transactions."
-    PROJECT_VERSION: str = "1.0.0"
+    PROJECT_VERSION: str = "1.1.0"
     DEBUG: bool = False
 
     DATABASE_URL: PostgresDsn
@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION_NAME: str = 'us-east-1'
     AWS_S3_BUCKET_NAME: str
+
+    # One ID (Yagona identifikatsiya tizimi) settings
+    ONE_ID_CLIENT_ID: str
+    ONE_ID_CLIENT_SECRET: SecretStr
+    ONE_ID_REDIRECT_URI: str = "https://back.qavat.uz/one_id/auth/callback"
+    ONE_ID_SCOPE: str = "myportal"
+    ONE_ID_BASE_URL: str = "https://sso.egov.uz/sso/oauth"
 
     class Config:
         env_file = '.env'

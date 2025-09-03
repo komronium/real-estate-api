@@ -76,17 +76,19 @@ class AdCreate(AdBase):
 
 
 class AdUpdate(BaseModel):
+    """Schema for updating ads - only includes fields that can be updated"""
     title: Optional[str] = None
     description: Optional[str] = None
     deal_type: Optional[DealType] = None
+    category_id: Optional[int] = None
 
     # Location
     city: Optional[str] = None
     complex_name: Optional[str] = None
     street: Optional[str] = None
     house_number: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    latitude: Optional[float] = Field(None, ge=-90, le=90)
+    longitude: Optional[float] = Field(None, ge=-180, le=180)
 
     # Property characteristics
     floors_in_building: Optional[int] = None
