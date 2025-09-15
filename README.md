@@ -251,7 +251,30 @@ GET /api/v1/ads/nearby?latitude=41.33575242335&longitude=69.21214325235&radius_k
 Run tests with pytest:
 
 ```bash
+# Run all tests
 pytest
+
+# Run with coverage
+pytest --cov=app
+
+# Run specific test file
+pytest tests/unit/test_services.py
+
+# Run with verbose output
+pytest -v
+```
+
+### Test Structure
+```
+tests/
+├── unit/              # Unit tests
+│   ├── test_services.py
+│   ├── test_models.py
+│   └── test_schemas.py
+├── integration/       # Integration tests
+│   ├── test_api.py
+│   └── test_database.py
+└── conftest.py       # Test configuration
 ```
 
 ## 📝 Database Migrations

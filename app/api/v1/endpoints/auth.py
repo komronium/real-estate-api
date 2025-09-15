@@ -28,7 +28,7 @@ async def login_admin(
 ) -> Token:
     """Login admin user"""
     auth_service = AuthService(db)
-    return await auth_service.login_admin(request)
+    return auth_service.login_admin(request)
 
 
 @router.post(

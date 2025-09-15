@@ -34,7 +34,7 @@ class AuthService:
 
         return self.generate_tokens(user)
 
-    async def generate_tokens(self, user: User) -> Token:
+    def generate_tokens(self, user: User) -> Token:
         """Generate access and refresh tokens for user"""
         access_token = create_access_token({'sub': str(user.id)})
         refresh_token = create_refresh_token({'sub': str(user.id), 'type': 'refresh'})

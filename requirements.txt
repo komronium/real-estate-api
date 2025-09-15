@@ -27,7 +27,12 @@ requests==2.32.3
 
 # Development & Testing
 pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1
 python-dotenv==1.0.1
 
 # Utilities
 python-dateutil==2.9.0.post0
+
+# Monitoring & Logging
+structlog==24.1.0

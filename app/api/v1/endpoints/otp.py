@@ -52,4 +52,4 @@ async def login_with_otp(
     auth_service = AuthService(db)
     user = await user_service.get_by_phone(request.phone_number)
     await otp_service.verify_otp(user, request)
-    return await auth_service.generate_tokens(user)
+    return auth_service.generate_tokens(user)
