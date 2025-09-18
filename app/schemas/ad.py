@@ -142,21 +142,31 @@ class AdOut(AdBase):
     user_id: Optional[UUID] = None
     category: CategoryOut
     
-    # Verification fields
+    # Computed fields - verification status from related data
+    is_author_verified: bool = False
     is_gold_verified: bool = False
-    gold_verification_status: GoldVerificationStatus = GoldVerificationStatus.pending
+    gold_verification_status: Optional[GoldVerificationStatus] = None
     gold_verification_requested_at: Optional[datetime] = None
     gold_verification_processed_at: Optional[datetime] = None
     gold_verification_comment: Optional[str] = None
-    
-    # Computed field - author verification status from user
-    is_author_verified: bool = False
 
     @model_validator(mode='after')
-    def compute_author_verification(self):
-        """Compute author verification status from user data"""
+    def compute_verification_status(self):
+        """Compute verification status from user and gold verification requests"""
+        # Author verification from user
         if hasattr(self, 'user') and self.user:
             self.is_author_verified = self.user.is_verified
+        
+        # Gold verification from latest request
+        if hasattr(self, 'gold_verification_requests') and self.gold_verification_requests:
+            # Get the latest gold verification request
+            latest_request = max(self.gold_verification_requests, key=lambda x: x.requested_at)
+            self.is_gold_verified = latest_request.status == GoldVerificationStatus.approved
+            self.gold_verification_status = latest_request.status
+            self.gold_verification_requested_at = latest_request.requested_at
+            self.gold_verification_processed_at = latest_request.processed_at
+            self.gold_verification_comment = latest_request.admin_comment
+        
         return self
 
     class Config:

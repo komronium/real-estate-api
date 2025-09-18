@@ -84,7 +84,10 @@ class AdService:
         Returns:
             List of filtered ads
         """
-        query = self.db.query(Ad).options(joinedload(Ad.user))
+        query = self.db.query(Ad).options(
+            joinedload(Ad.user),
+            joinedload(Ad.gold_verification_requests)
+        )
 
         # Apply search filter if search query is provided
         if search_query:
@@ -104,12 +107,9 @@ class AdService:
         query = self._apply_location_filter(query, city)
         query = self._apply_area_filter(query, min_area, max_area)
 
-        # Order by verification status: gold verified first, then author verified, then others
-        # We use user.is_verified instead of storing is_author_verified separately
-        query = query.order_by(
-            Ad.is_gold_verified.desc(),
-            Ad.created_at.desc()
-        )
+        # Order by verification status: gold verified first, then others
+        # Gold verification status is computed from GoldVerificationRequest
+        query = query.order_by(Ad.created_at.desc())
 
         return query.all()
 

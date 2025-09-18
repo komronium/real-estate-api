@@ -63,10 +63,6 @@ class VerificationService:
             status=GoldVerificationStatus.pending
         )
 
-        # Update ad status
-        ad.gold_verification_status = GoldVerificationStatus.pending
-        ad.gold_verification_requested_at = datetime.utcnow()
-
         self.db.add(verification_request)
         self.db.commit()
         self.db.refresh(verification_request)
@@ -116,15 +112,6 @@ class VerificationService:
         verification_request.admin_comment = update_data.admin_comment
         verification_request.processed_by = admin_user.id
         verification_request.processed_at = datetime.utcnow()
-
-        # Update ad
-        ad = verification_request.ad
-        ad.gold_verification_status = update_data.status
-        ad.gold_verification_processed_at = datetime.utcnow()
-        ad.gold_verification_comment = update_data.admin_comment
-
-        if update_data.status == GoldVerificationStatus.approved:
-            ad.is_gold_verified = True
 
         self.db.commit()
         self.db.refresh(verification_request)
@@ -177,12 +164,6 @@ class VerificationService:
         verification_request.status = GoldVerificationStatus.rejected
         verification_request.admin_comment = "Cancelled by user"
         verification_request.processed_at = datetime.utcnow()
-
-        # Update ad status
-        ad = verification_request.ad
-        ad.gold_verification_status = GoldVerificationStatus.rejected
-        ad.gold_verification_processed_at = datetime.utcnow()
-        ad.gold_verification_comment = "Cancelled by user"
 
         self.db.commit()
         self.db.refresh(verification_request)

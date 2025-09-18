@@ -71,13 +71,6 @@ class Ad(Base):
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
-    # Verification fields
-    is_gold_verified = Column(Boolean, default=False, nullable=False, comment="Gold verification status")
-    gold_verification_status = Column(Enum(GoldVerificationStatus), default=GoldVerificationStatus.pending, nullable=False)
-    gold_verification_requested_at = Column(DateTime(timezone=True), nullable=True)
-    gold_verification_processed_at = Column(DateTime(timezone=True), nullable=True)
-    gold_verification_comment = Column(Text, nullable=True, comment="Admin comment for gold verification")
-
     # Relationships
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
     user = relationship("User", back_populates="ads")
