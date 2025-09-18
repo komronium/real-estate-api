@@ -38,13 +38,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_gold_verification_requests_id'), 'gold_verification_requests', ['id'], unique=False)
-    op.add_column('ad', sa.Column('is_author_verified', sa.Boolean(), nullable=False, comment='Author verified with OneID'))
-    op.add_column('ad', sa.Column('is_gold_verified', sa.Boolean(), nullable=False, comment='Gold verification status'))
-    op.add_column('ad', sa.Column('gold_verification_status', sa.Enum('pending', 'approved', 'rejected', name='goldverificationstatus'), nullable=False))
-    op.add_column('ad', sa.Column('gold_verification_requested_at', sa.DateTime(timezone=True), nullable=True))
-    op.add_column('ad', sa.Column('gold_verification_processed_at', sa.DateTime(timezone=True), nullable=True))
-    op.add_column('ad', sa.Column('gold_verification_comment', sa.Text(), nullable=True, comment='Admin comment for gold verification'))
-    # ### end Alembic commands ###
+   # ### end Alembic commands ###
 
 
 def downgrade() -> None:
