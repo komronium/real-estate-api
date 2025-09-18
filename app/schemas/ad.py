@@ -1,7 +1,8 @@
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, field_validator, HttpUrl, model_validator
 from typing import Optional, List
 from enum import Enum
+from datetime import datetime
 
 from app.schemas.category import CategoryOut
 
@@ -14,6 +15,12 @@ class DealType(str, Enum):
 class ContactType(str, Enum):
     REALTOR = "realtor"
     OWNER = "owner"
+
+
+class GoldVerificationStatus(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
 
 
 class AdBase(BaseModel):
@@ -134,6 +141,23 @@ class AdOut(AdBase):
     id: int
     user_id: Optional[UUID] = None
     category: CategoryOut
+    
+    # Verification fields
+    is_gold_verified: bool = False
+    gold_verification_status: GoldVerificationStatus = GoldVerificationStatus.pending
+    gold_verification_requested_at: Optional[datetime] = None
+    gold_verification_processed_at: Optional[datetime] = None
+    gold_verification_comment: Optional[str] = None
+    
+    # Computed field - author verification status from user
+    is_author_verified: bool = False
+
+    @model_validator(mode='after')
+    def compute_author_verification(self):
+        """Compute author verification status from user data"""
+        if hasattr(self, 'user') and self.user:
+            self.is_author_verified = self.user.is_verified
+        return self
 
     class Config:
         from_attributes = True
@@ -141,6 +165,33 @@ class AdOut(AdBase):
 
 class UploadFileResponse(BaseModel):
     url: HttpUrl
+
+    class Config:
+        from_attributes = True
+
+
+class GoldVerificationRequestBase(BaseModel):
+    request_reason: Optional[str] = None
+
+
+class GoldVerificationRequestCreate(GoldVerificationRequestBase):
+    ad_id: int
+
+
+class GoldVerificationRequestUpdate(BaseModel):
+    status: GoldVerificationStatus
+    admin_comment: Optional[str] = None
+
+
+class GoldVerificationRequestOut(GoldVerificationRequestBase):
+    id: int
+    ad_id: int
+    requested_by: UUID
+    processed_by: Optional[UUID] = None
+    status: GoldVerificationStatus
+    admin_comment: Optional[str] = None
+    requested_at: datetime
+    processed_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

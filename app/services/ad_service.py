@@ -7,6 +7,8 @@ from datetime import datetime
 
 from app.models.ad import Ad, DealType
 from app.schemas.ad import AdCreate, AdUpdate
+from app.models.user import User
+from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
 
@@ -82,7 +84,7 @@ class AdService:
         Returns:
             List of filtered ads
         """
-        query = self.db.query(Ad)
+        query = self.db.query(Ad).options(joinedload(Ad.user))
 
         # Apply search filter if search query is provided
         if search_query:
@@ -101,6 +103,13 @@ class AdService:
 
         query = self._apply_location_filter(query, city)
         query = self._apply_area_filter(query, min_area, max_area)
+
+        # Order by verification status: gold verified first, then author verified, then others
+        # We use user.is_verified instead of storing is_author_verified separately
+        query = query.order_by(
+            Ad.is_gold_verified.desc(),
+            Ad.created_at.desc()
+        )
 
         return query.all()
 

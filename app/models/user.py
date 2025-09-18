@@ -65,6 +65,7 @@ class User(Base):
     otps = relationship('OTP', back_populates='user')
     comments = relationship("Comment", back_populates="user", cascade="all, delete")
     popular_ads = relationship("PopularAd", back_populates="admin")
+    gold_verification_requests = relationship("GoldVerificationRequest", foreign_keys="GoldVerificationRequest.requested_by", back_populates="requester")
     
     # One ID relationship
     one_id_info = relationship("OneIDInfo", back_populates="user", uselist=False)
