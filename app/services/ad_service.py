@@ -8,6 +8,7 @@ from datetime import datetime
 from app.models.ad import Ad, DealType
 from app.schemas.ad import AdCreate, AdUpdate
 from app.models.user import User
+from app.models.category import Category
 from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
@@ -128,6 +129,11 @@ class AdService:
         """Create a new ad"""
         if not ad_data.category_id:
             raise HTTPException(status_code=400, detail="Category ID is required")
+
+        category = self.db.query(Category).filter(Category.id == ad_data.category_id).first()
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+
 
         new_ad = Ad(**ad_data.model_dump(), user_id=user_id)
         self.db.add(new_ad)
