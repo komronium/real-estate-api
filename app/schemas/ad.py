@@ -5,6 +5,7 @@ from enum import Enum
 from datetime import datetime
 
 from app.schemas.category import CategoryOut
+from app.schemas.user import UserOut
 
 
 class DealType(str, Enum):
@@ -196,8 +197,9 @@ class GoldVerificationRequestUpdate(BaseModel):
 class GoldVerificationRequestOut(GoldVerificationRequestBase):
     id: int
     ad_id: int
-    requested_by: UUID
-    processed_by: Optional[UUID] = None
+    # Map to ORM relationship 'requester' and 'processor' to expose full users
+    requested_by: UserOut = Field(..., validation_alias='requester')
+    processed_by: Optional[UserOut] = Field(None, validation_alias='processor')
     status: GoldVerificationStatus
     admin_comment: Optional[str] = None
     requested_at: datetime
