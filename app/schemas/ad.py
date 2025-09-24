@@ -143,6 +143,9 @@ class AdOut(AdBase):
     user_id: Optional[UUID] = None
     category: CategoryOut
     
+    # Related data needed for computed fields
+    gold_verification_requests: Optional[List['GoldVerificationRequestOut']] = None
+    
     # Computed fields - verification status from related data
     is_author_verified: bool = False
     is_gold_verified: bool = False
@@ -154,12 +157,26 @@ class AdOut(AdBase):
     @model_validator(mode='after')
     def compute_verification_status(self):
         """Compute verification status from user and gold verification requests"""
-        # Author verification from user
-        if hasattr(self, 'user') and self.user:
-            self.is_author_verified = self.user.is_verified
+        # Author verification from DB by user_id
+        if self.user_id:
+            try:
+                from app.db.session import SessionLocal
+                from app.models.user import User
+                db = SessionLocal()
+                user = db.query(User).filter(User.id == self.user_id).first()
+                if user:
+                    self.is_author_verified = user.is_verified
+            except Exception:
+                # Fail-safe: leave as default False if DB access fails
+                pass
+            finally:
+                try:
+                    db.close()
+                except Exception:
+                    pass
         
         # Gold verification from latest request
-        if hasattr(self, 'gold_verification_requests') and self.gold_verification_requests:
+        if self.gold_verification_requests:
             # Get the latest gold verification request
             latest_request = max(self.gold_verification_requests, key=lambda x: x.requested_at)
             self.is_gold_verified = latest_request.status == GoldVerificationStatus.approved

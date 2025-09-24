@@ -13,7 +13,7 @@ class UserService:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all_users(self) -> List[User]:
+    async def get_all_users(self) -> List[User]:
         """Get all users"""
         return self.db.query(User).all()
 
@@ -73,7 +73,7 @@ class UserService:
         except ValueError:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid user ID format')
     
-    def update_user(self, user_id: int, user_data: UserUpdate) -> User:
+    async def update_user(self, user_id: int, user_data: UserUpdate) -> User:
         """Update user information"""
         user = self.get_user_by_id(user_id)
 

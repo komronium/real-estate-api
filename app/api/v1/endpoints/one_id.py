@@ -62,7 +62,7 @@ async def verify_with_one_id(
                 passport_number=updated_user.one_id_info.passport_number,
                 birth_date=updated_user.one_id_info.birth_date,
                 user_type=updated_user.one_id_info.user_type,
-                is_verified=updated_user.one_id_info.is_verified,
+                is_verified=True,
                 validation_method=updated_user.one_id_info.validation_method,
                 auth_method=updated_user.one_id_info.auth_method,
                 pkcs_legal_tin=updated_user.one_id_info.pkcs_legal_tin,

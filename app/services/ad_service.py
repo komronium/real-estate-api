@@ -116,11 +116,27 @@ class AdService:
 
     def get_ads_by_user(self, user_id: int) -> List[Ad]:
         """Get all ads created by a specific user"""
-        return self.db.query(Ad).filter(Ad.user_id == user_id).all()
+        return (
+            self.db.query(Ad)
+            .options(
+                joinedload(Ad.user),
+                joinedload(Ad.gold_verification_requests)
+            )
+            .filter(Ad.user_id == user_id)
+            .all()
+        )
 
     def get_ad_or_404(self, ad_id: int) -> Ad:
         """Get ad by ID or raise 404 if not found"""
-        ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
+        ad = (
+            self.db.query(Ad)
+            .options(
+                joinedload(Ad.user),
+                joinedload(Ad.gold_verification_requests)
+            )
+            .filter(Ad.id == ad_id)
+            .first()
+        )
         if not ad:
             raise HTTPException(status_code=404, detail="Ad not found")
         return ad
