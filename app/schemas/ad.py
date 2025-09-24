@@ -214,6 +214,7 @@ class GoldVerificationRequestUpdate(BaseModel):
 class GoldVerificationRequestOut(GoldVerificationRequestBase):
     id: int
     ad_id: int
+    ad: AdOut
     # Map to ORM relationship 'requester' and 'processor' to expose full users
     requested_by: UserOut = Field(..., validation_alias='requester')
     processed_by: Optional[UserOut] = Field(None, validation_alias='processor')
