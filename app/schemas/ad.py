@@ -144,7 +144,7 @@ class AdOut(AdBase):
     category: CategoryOut
     
     # Related data needed for computed fields
-    gold_verification_requests: Optional[List['GoldVerificationRequestOut']] = None
+    gold_verification_requests: Optional[List['GoldVerificationRequestNoAdOut']] = None
     
     # Computed fields - verification status from related data
     is_author_verified: bool = False
@@ -211,10 +211,31 @@ class GoldVerificationRequestUpdate(BaseModel):
     admin_comment: Optional[str] = None
 
 
+class AdSimpleOut(AdBase):
+    id: int
+    user_id: Optional[UUID] = None
+    category: CategoryOut
+
+
 class GoldVerificationRequestOut(GoldVerificationRequestBase):
     id: int
     ad_id: int
-    ad: AdOut
+    ad: AdSimpleOut
+    # Map to ORM relationship 'requester' and 'processor' to expose full users
+    requested_by: UserOut = Field(..., validation_alias='requester')
+    processed_by: Optional[UserOut] = Field(None, validation_alias='processor')
+    status: GoldVerificationStatus
+    admin_comment: Optional[str] = None
+    requested_at: datetime
+    processed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class GoldVerificationRequestNoAdOut(GoldVerificationRequestBase):
+    id: int
+    ad_id: int
     # Map to ORM relationship 'requester' and 'processor' to expose full users
     requested_by: UserOut = Field(..., validation_alias='requester')
     processed_by: Optional[UserOut] = Field(None, validation_alias='processor')
