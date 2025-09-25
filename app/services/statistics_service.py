@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from typing import Dict, List
 from datetime import datetime, date
-from app.models.ad import Ad
+from app.models.ad import Ad, GoldVerificationRequest
 from app.models.user import User
 
 
@@ -91,6 +91,12 @@ class StatisticsService:
         return self.db.query(Ad).filter(
             extract('year', Ad.created_at) == current_date.year
         ).count()
+
+    def get_total_gold_verification_orders_count(self) -> int:
+        """Count distinct ads that have submitted at least one gold verification request"""
+        return self.db.query(
+            func.count(func.distinct(GoldVerificationRequest.ad_id))
+        ).select_from(GoldVerificationRequest).scalar() or 0
 
     def _get_month_name(self, month: int) -> str:
         """Get month name by number"""

@@ -76,6 +76,7 @@ def get_statistics_overview(db: Session = Depends(get_db)):
     return {
         "total_users": stats_service.get_total_users_count(),
         "total_ads": stats_service.get_total_ads_count(),
+        "total_orders": stats_service.get_total_gold_verification_orders_count(),
         "current_month_ads": stats_service.get_current_month_ads_count(),
         "current_year_ads": stats_service.get_current_year_ads_count(),
         "monthly_stats_current_year": stats_service.get_ads_count_by_month(datetime.now().year),
