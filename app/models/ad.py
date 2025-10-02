@@ -60,6 +60,9 @@ class Ad(Base):
     # Images - storing as array of URLs
     image_urls = Column(ARRAY(String), nullable=True, default=[])
 
+    # Documents - storing as array of URLs
+    document_urls = Column(ARRAY(String), nullable=True, default=[])
+
     # Price and terms
     price = Column(Integer, nullable=True)
     currency = Column(String, default="USD", nullable=False)
@@ -81,6 +84,7 @@ class Ad(Base):
     comments = relationship("Comment", back_populates="ad", cascade="all, delete")
     popular_ad = relationship("PopularAd", uselist=False, back_populates="ad")
     gold_verification_requests = relationship("GoldVerificationRequest", back_populates="ad", cascade="all, delete")
+    favourited_by = relationship("Favourite", back_populates="ad", cascade="all, delete")
 
 
 class GoldVerificationRequest(Base):

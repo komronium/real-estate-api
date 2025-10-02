@@ -56,6 +56,8 @@ class AdBase(BaseModel):
 
     # Images
     image_urls: Optional[List[str]] = []
+    # Documents
+    document_urls: Optional[List[str]] = []
 
     # Price and terms
     price: Optional[int] = None
@@ -113,6 +115,8 @@ class AdUpdate(BaseModel):
 
     # Images
     image_urls: Optional[List[str]] = None
+    # Documents
+    document_urls: Optional[List[str]] = None
 
     # Price and terms
     price: Optional[int] = None
@@ -153,6 +157,10 @@ class AdOut(AdBase):
     gold_verification_requested_at: Optional[datetime] = None
     gold_verification_processed_at: Optional[datetime] = None
     gold_verification_comment: Optional[str] = None
+
+    # Favourites info (computed)
+    is_favourited: Optional[bool] = None
+    favourites_count: Optional[int] = None
 
     @model_validator(mode='after')
     def compute_verification_status(self):

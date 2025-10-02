@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-from app.api.deps import get_db, get_admin_user
+from app.api.deps import get_db, get_admin_user, get_current_user
 from app.schemas.user import UserAdminCreate, UserUpdate, UserOut
 from app.services.user_service import UserService
+from app.schemas.ad import AdOut
 
 router = APIRouter(
     prefix='/api/v1/users',
@@ -60,7 +61,7 @@ async def get_user(
     db: Session = Depends(get_db)
 ):
     user_service = UserService(db)
-    return await user_service.get_user_by_id(user_id)
+    return user_service.get_user_by_id(user_id)
 
 
 @router.patch(
@@ -97,3 +98,34 @@ async def delete_user(
 ) -> None:
     user_service = UserService(db)
     await user_service.delete_user(user_id)
+
+
+@router.post('/me/favourites/{ad_id}', status_code=status.HTTP_201_CREATED)
+async def add_favourite(
+    ad_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = UserService(db)
+    fav = service.add_favourite(current_user.id, ad_id)
+    return {"id": fav.id, "ad_id": fav.ad_id, "created_at": fav.created_at}
+
+
+@router.delete('/me/favourites/{ad_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def remove_favourite(
+    ad_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = UserService(db)
+    service.remove_favourite(current_user.id, ad_id)
+    return
+
+
+@router.get('/me/favourites', response_model=List[AdOut])
+async def list_my_favourites(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = UserService(db)
+    return service.list_favourites(current_user.id)

@@ -16,7 +16,7 @@ from app.core.config import settings
 # Constants
 COORDINATE_CONVERSION_FACTOR = 111.0  # 1 degree ≈ 111 km
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf'}
 
 
 class AdService:
@@ -194,6 +194,29 @@ class AdService:
         ad.image_urls.extend(image_urls)
         self.db.commit()
         self.db.refresh(ad)
+        return ad
+
+    def add_documents_to_ad(self, ad_id: int, document_urls: List[str]) -> Ad:
+        """Add multiple documents to an existing ad"""
+        ad = self.get_ad_or_404(ad_id)
+
+        if ad.document_urls is None:
+            ad.document_urls = []
+
+        ad.document_urls.extend(document_urls)
+        self.db.commit()
+        self.db.refresh(ad)
+        return ad
+
+    def remove_document_from_ad(self, ad_id: int, document_url: str) -> Ad:
+        """Remove a specific document from an ad"""
+        ad = self.get_ad_or_404(ad_id)
+
+        if ad.document_urls and document_url in ad.document_urls:
+            ad.document_urls.remove(document_url)
+            self.db.commit()
+            self.db.refresh(ad)
+
         return ad
 
     def remove_image_from_ad(self, ad_id: int, image_url: str) -> Ad:

@@ -12,6 +12,7 @@ from app.models.ad import *
 from app.models.category import *
 from app.models.comment import *
 from app.models.popular_ad import *
+from app.models.favourite import *
 
 config = context.config
 

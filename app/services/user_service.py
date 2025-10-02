@@ -5,6 +5,8 @@ from uuid import UUID
 
 from app.core.security import hash_password
 from app.models.user import User, UserRole
+from app.models.favourite import Favourite
+from app.models.ad import Ad
 from app.schemas.user import UserUpdate
 
 
@@ -91,3 +93,28 @@ class UserService:
         user = self.get_user_by_id(user_id)
         self.db.delete(user)
         self.db.commit()
+
+    # Favourites
+    def add_favourite(self, user_id, ad_id) -> Favourite:
+        ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
+        if not ad:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Ad not found')
+        existing = self.db.query(Favourite).filter(Favourite.user_id == user_id, Favourite.ad_id == ad_id).first()
+        if existing:
+            return existing
+        fav = Favourite(user_id=user_id, ad_id=ad_id)
+        self.db.add(fav)
+        self.db.commit()
+        self.db.refresh(fav)
+        return fav
+
+    def remove_favourite(self, user_id, ad_id) -> None:
+        fav = self.db.query(Favourite).filter(Favourite.user_id == user_id, Favourite.ad_id == ad_id).first()
+        if not fav:
+            return
+        self.db.delete(fav)
+        self.db.commit()
+
+    def list_favourites(self, user_id) -> List[Ad]:
+        fav_ad_ids = self.db.query(Favourite.ad_id).filter(Favourite.user_id == user_id).subquery()
+        return self.db.query(Ad).filter(Ad.id.in_(fav_ad_ids)).all()

@@ -10,6 +10,7 @@ from app.models.ad import Ad, DealType, ContactType
 from app.models.comment import Comment
 from app.models.otp import OTP
 from app.models.popular_ad import PopularAd
+from app.models.favourite import Favourite
 
 # This ensures all models are imported and available when SQLAlchemy initializes
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     "ContactType",
     "Comment",
     "OTP",
-    "PopularAd"
+    "PopularAd",
+    "Favourite"
 ]
