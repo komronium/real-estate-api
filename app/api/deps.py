@@ -1,6 +1,6 @@
 from typing import Generator
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
@@ -8,6 +8,7 @@ from app.db.session import SessionLocal
 from app.models.user import User, UserRole
 
 oauth2_scheme = HTTPBearer()
+oauth2_scheme_optional = HTTPBearer(auto_error=False)
 
 
 def get_db() -> Generator:
@@ -48,3 +49,20 @@ async def get_admin_user(
             detail='Access forbidden',
         )
     return current_user
+
+
+async def get_current_user_optional(
+        db: Session = Depends(get_db),
+        token: HTTPAuthorizationCredentials | None = Depends(oauth2_scheme_optional)
+) -> User | None:
+    """Return current user if Authorization provided and valid; otherwise None."""
+    if not token:
+        return None
+
+    payload = decode_access_token(token.credentials)
+    if not payload:
+        return None
+
+    user_id = payload.get('sub')
+    user = db.query(User).filter(User.id == user_id).first()
+    return user

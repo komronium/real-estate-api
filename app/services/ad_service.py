@@ -2,10 +2,12 @@ import uuid
 import boto3
 from fastapi import HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from typing import Optional, List
 from datetime import datetime
 
 from app.models.ad import Ad, DealType
+from app.models.favourite import Favourite
 from app.schemas.ad import AdCreate, AdUpdate
 from app.models.user import User
 from app.models.category import Category
@@ -56,6 +58,25 @@ class AdService:
             query = query.filter(Ad.total_area <= max_area)
         return query
 
+    def _annotate_favourites(self, ads: List[Ad], current_user: Optional[User]) -> List[Ad]:
+        """Attach transient attributes is_favourited and favourites_count to each ad."""
+        if not ads:
+            return ads
+
+        # Build list of ad ids to check favourite membership
+        ad_ids = [ad.id for ad in ads]
+
+        user_fav_set = set()
+        if current_user is not None:
+            user_fav_set = set(
+                id for (id,) in self.db.query(Favourite.ad_id).filter(Favourite.user_id == current_user.id, Favourite.ad_id.in_(ad_ids)).all()
+            )
+        for ad in ads:
+            # transient attribute to be picked by schema field
+            setattr(ad, 'is_favourited', ad.id in user_fav_set if current_user is not None else False)
+
+        return ads
+
     def get_all_ads(
             self,
             search_query: Optional[str] = None,
@@ -67,6 +88,7 @@ class AdService:
             city: Optional[str] = None,
             min_area: Optional[float] = None,
             max_area: Optional[float] = None,
+            current_user: Optional[User] = None,
     ) -> List[Ad]:
         """
         Get all ads with optional filtering
@@ -112,11 +134,12 @@ class AdService:
         # Gold verification status is computed from GoldVerificationRequest
         query = query.order_by(Ad.created_at.desc())
 
-        return query.all()
+        ads = query.all()
+        return self._annotate_favourites(ads, current_user)
 
-    def get_ads_by_user(self, user_id: int) -> List[Ad]:
+    def get_ads_by_user(self, user_id: int, current_user: Optional[User] = None) -> List[Ad]:
         """Get all ads created by a specific user"""
-        return (
+        ads = (
             self.db.query(Ad)
             .options(
                 joinedload(Ad.user),
@@ -125,8 +148,9 @@ class AdService:
             .filter(Ad.user_id == user_id)
             .all()
         )
+        return self._annotate_favourites(ads, current_user)
 
-    def get_ad_or_404(self, ad_id: int) -> Ad:
+    def get_ad_or_404(self, ad_id: int, current_user: Optional[User] = None) -> Ad:
         """Get ad by ID or raise 404 if not found"""
         ad = (
             self.db.query(Ad)
@@ -139,6 +163,8 @@ class AdService:
         )
         if not ad:
             raise HTTPException(status_code=404, detail="Ad not found")
+        # annotate single ad with favourites
+        self._annotate_favourites([ad], current_user)
         return ad
 
     def create_ad(self, ad_data: AdCreate, user_id: int) -> Ad:

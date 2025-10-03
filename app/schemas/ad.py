@@ -160,7 +160,6 @@ class AdOut(AdBase):
 
     # Favourites info (computed)
     is_favourited: Optional[bool] = None
-    favourites_count: Optional[int] = None
 
     @model_validator(mode='after')
     def compute_verification_status(self):

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Query, File, Uplo
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_user, get_current_user_optional
 from app.schemas.category import AdCategoryUpdate
 from app.services.ad_service import AdService
 from app.schemas.ad import AdCreate, AdOut, AdUpdate, DealType, UploadFileResponse
@@ -22,7 +22,8 @@ def list_ads(
         city: Optional[str] = None,
         min_area: Optional[float] = None,
         max_area: Optional[float] = None,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     ad_service = AdService(db)
 
@@ -35,7 +36,8 @@ def list_ads(
         rooms_count=rooms_count,
         city=city,
         min_area=min_area,
-        max_area=max_area
+        max_area=max_area,
+        current_user=current_user
     )
 
 
@@ -54,10 +56,13 @@ def get_nearby_ads(
         latitude: float = Query(..., ge=-90, le=90),
         longitude: float = Query(..., ge=-180, le=180),
         radius_km: float = Query(5.0, ge=0.1, le=50),
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
+        current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     ad_service = AdService(db)
-    return ad_service.get_ads_by_location(latitude, longitude, radius_km)
+    ads = ad_service.get_ads_by_location(latitude, longitude, radius_km)
+    # annotate favourites on result set
+    return ad_service._annotate_favourites(ads, current_user)
 
 
 @router.get('/mine', response_model=List[AdOut])
@@ -66,13 +71,13 @@ def get_my_ads(
         current_user: User = Depends(get_current_user)
 ):
     ad_service = AdService(db)
-    return ad_service.get_ads_by_user(current_user.id)
+    return ad_service.get_ads_by_user(current_user.id, current_user)
 
 
 @router.get("/{ad_id}", response_model=AdOut)
-def get_ad(ad_id: int, db: Session = Depends(get_db)):
+def get_ad(ad_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_current_user_optional)):
     ad_service = AdService(db)
-    return ad_service.get_ad_or_404(ad_id)
+    return ad_service.get_ad_or_404(ad_id, current_user)
 
 
 @router.patch("/{ad_id}", response_model=AdOut)
