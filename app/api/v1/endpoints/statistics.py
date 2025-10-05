@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
-from datetime import datetime
+from datetime import datetime, date
 
 from app.api.deps import get_db
 from app.services.statistics_service import StatisticsService
@@ -82,3 +82,26 @@ def get_statistics_overview(db: Session = Depends(get_db)):
         "monthly_stats_current_year": stats_service.get_ads_count_by_month(datetime.now().year),
         "yearly_stats": stats_service.get_ads_count_by_year()
     }
+
+
+@router.get("/timeseries", response_model=Dict[str, Any])
+def get_timeseries(
+    start: str = Query(..., description="Start month, format YYYY-MM"),
+    end: str = Query(..., description="End month, format YYYY-MM"),
+    db: Session = Depends(get_db)
+):
+    """Monthly timeseries for ads, users, and orders between start and end months (inclusive)."""
+    try:
+        start_dt = datetime.strptime(start, "%Y-%m")
+        end_dt = datetime.strptime(end, "%Y-%m")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM")
+
+    if (end_dt.year, end_dt.month) < (start_dt.year, start_dt.month):
+        raise HTTPException(status_code=400, detail="end must be >= start")
+
+    stats_service = StatisticsService(db)
+    return stats_service.get_timeseries_by_month(
+        date(start_dt.year, start_dt.month, 1),
+        date(end_dt.year, end_dt.month, 1)
+    )
