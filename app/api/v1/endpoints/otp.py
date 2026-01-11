@@ -28,7 +28,7 @@ async def request_otp(
     user_service = UserService(db)
     otp_service = OTPService(db)
 
-    user, _ = await user_service.get_or_create_by_phone(request.phone_number)
+    user, _ = await user_service.get_or_create_by_phone(request.phone_number, request.role)
     code = await otp_service.create_otp(user)
 
     await send_sms(request.phone_number, code)
@@ -50,6 +50,8 @@ async def login_with_otp(
     user_service = UserService(db)
     otp_service = OTPService(db)
     auth_service = AuthService(db)
-    user = await user_service.get_by_phone(request.phone_number)
+    
+    # Get or create user with role
+    user, _ = await user_service.get_or_create_by_phone(request.phone_number, request.role)
     await otp_service.verify_otp(user, request)
     return auth_service.generate_tokens(user)

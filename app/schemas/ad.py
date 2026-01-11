@@ -146,6 +146,8 @@ class AdOut(AdBase):
     id: int
     user_id: Optional[UUID] = None
     category: CategoryOut
+    views_count: int = 0
+    user: Optional[UserOut] = None
     
     # Related data needed for computed fields
     gold_verification_requests: Optional[List['GoldVerificationRequestNoAdOut']] = None

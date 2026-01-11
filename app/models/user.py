@@ -9,6 +9,7 @@ from app.db.base import Base
 
 class UserRole(str, Enum):
     USER = 'user'
+    REALTOR = 'realtor'
     LEGAL = 'legal'
     ADMIN = 'admin'
 
@@ -60,6 +61,10 @@ class User(Base):
     phone_number = Column(String(length=16), unique=True, nullable=True)
     password = Column(String(length=64), nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False, comment="User verification status")
+    
+    # Realtor fields
+    avatar = Column(String, nullable=True, comment="S3 URL for user avatar")
+    company_name = Column(String(length=255), nullable=True, comment="Company name for realtors")
 
     ads = relationship('Ad', back_populates='user')
     otps = relationship('OTP', back_populates='user')

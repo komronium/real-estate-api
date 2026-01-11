@@ -47,13 +47,13 @@ class UserService:
         """Get user by username"""
         return self.db.query(User).filter(User.username == username).first()
 
-    async def get_or_create_by_phone(self, phone_number: str) -> Tuple[User, bool]:
+    async def get_or_create_by_phone(self, phone_number: str, role: UserRole = UserRole.USER) -> Tuple[User, bool]:
         """Get user by phone number or create if not exists"""
         user = self.db.query(User).filter(User.phone_number == phone_number).first()
         created = False
 
         if not user:
-            user = User(phone_number=phone_number)
+            user = User(phone_number=phone_number, role=role)
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)

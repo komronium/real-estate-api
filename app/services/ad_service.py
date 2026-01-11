@@ -150,7 +150,7 @@ class AdService:
         )
         return self._annotate_favourites(ads, current_user)
 
-    def get_ad_or_404(self, ad_id: int, current_user: Optional[User] = None) -> Ad:
+    def get_ad_or_404(self, ad_id: int, current_user: Optional[User] = None, increment_views: bool = False) -> Ad:
         """Get ad by ID or raise 404 if not found"""
         ad = (
             self.db.query(Ad)
@@ -165,6 +165,24 @@ class AdService:
             raise HTTPException(status_code=404, detail="Ad not found")
         # annotate single ad with favourites
         self._annotate_favourites([ad], current_user)
+        
+        # Increment views if requested
+        if increment_views:
+            ad.views_count = (ad.views_count or 0) + 1
+            self.db.commit()
+            self.db.refresh(ad)
+        
+        return ad
+
+    def increment_ad_views(self, ad_id: int) -> Ad:
+        """Increment views count for an ad"""
+        ad = self.db.query(Ad).filter(Ad.id == ad_id).first()
+        if not ad:
+            raise HTTPException(status_code=404, detail="Ad not found")
+        
+        ad.views_count = (ad.views_count or 0) + 1
+        self.db.commit()
+        self.db.refresh(ad)
         return ad
 
     def create_ad(self, ad_data: AdCreate, user_id: int) -> Ad:

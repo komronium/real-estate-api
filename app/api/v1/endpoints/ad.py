@@ -77,7 +77,7 @@ def get_my_ads(
 @router.get("/{ad_id}", response_model=AdOut)
 def get_ad(ad_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_current_user_optional)):
     ad_service = AdService(db)
-    return ad_service.get_ad_or_404(ad_id, current_user)
+    return ad_service.get_ad_or_404(ad_id, current_user, increment_views=True)
 
 
 @router.patch("/{ad_id}", response_model=AdOut)

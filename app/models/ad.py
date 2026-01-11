@@ -74,6 +74,9 @@ class Ad(Base):
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
+    # Statistics
+    views_count = Column(Integer, default=0, nullable=False, comment="Number of times the ad has been viewed")
+
     # Relationships
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
     user = relationship("User", back_populates="ads")

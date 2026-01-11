@@ -31,6 +31,8 @@ class UserAdminCreate(UserBase):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
+    avatar: Optional[str] = None
+    company_name: Optional[str] = None
 
 
 class UserOut(UserBase):
@@ -39,6 +41,8 @@ class UserOut(UserBase):
     phone_number: Optional[str] = None
     username: Optional[str] = None
     is_active: bool
+    avatar: Optional[str] = None
+    company_name: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 
