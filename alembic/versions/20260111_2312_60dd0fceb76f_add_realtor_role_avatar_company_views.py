@@ -26,16 +26,6 @@ def upgrade() -> None:
     op.execute("UPDATE ad SET views_count = 0 WHERE views_count IS NULL")
     # Make it NOT NULL
     op.alter_column('ad', 'views_count', nullable=False)
-    op.alter_column('ad', 'latitude',
-               existing_type=sa.REAL(),
-               type_=sa.Float(precision=8),
-               existing_nullable=False)
-    op.alter_column('ad', 'longitude',
-               existing_type=sa.REAL(),
-               type_=sa.Float(precision=8),
-               existing_nullable=False)
-    op.add_column('user', sa.Column('avatar', sa.String(), nullable=True, comment='S3 URL for user avatar'))
-    op.add_column('user', sa.Column('company_name', sa.String(length=255), nullable=True, comment='Company name for realtors'))
     op.drop_constraint('user_email_key', 'user', type_='unique')
     op.drop_column('user', 'email')
     # ### end Alembic commands ###
