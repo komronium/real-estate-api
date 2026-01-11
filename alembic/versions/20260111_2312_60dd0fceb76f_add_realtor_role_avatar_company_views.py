@@ -26,9 +26,6 @@ def upgrade() -> None:
     op.execute("UPDATE ad SET views_count = 0 WHERE views_count IS NULL")
     # Make it NOT NULL
     op.alter_column('ad', 'views_count', nullable=False)
-    op.drop_constraint('user_email_key', 'user', type_='unique')
-    op.drop_column('user', 'email')
-    # ### end Alembic commands ###
 
 
 def downgrade() -> None:
