@@ -1,10 +1,23 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Text, Boolean, Enum, UUID, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.sql import func
-from app.db.base import Base
 import enum
 from datetime import datetime
+
+from sqlalchemy import (
+    UUID,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
+from app.db.base import Base
 
 
 class DealType(enum.Enum):
@@ -26,7 +39,7 @@ class GoldVerificationStatus(enum.Enum):
 class Ad(Base):
     # Primary key
     id = Column(Integer, primary_key=True, index=True)
-    
+
     # Basic information
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
@@ -69,13 +82,20 @@ class Ad(Base):
     commission_from_buyer = Column(Boolean, default=False)
 
     # Contact information
-    contact_type = Column(Enum(ContactType), nullable=False, default=ContactType.realtor)
+    contact_type = Column(
+        Enum(ContactType), nullable=False, default=ContactType.realtor
+    )
     full_name = Column(String, nullable=False)
     email = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
     # Statistics
-    views_count = Column(Integer, default=0, nullable=False, comment="Number of times the ad has been viewed")
+    views_count = Column(
+        Integer,
+        default=0,
+        nullable=False,
+        comment="Number of times the ad has been viewed",
+    )
 
     # Relationships
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"))
@@ -86,27 +106,48 @@ class Ad(Base):
 
     comments = relationship("Comment", back_populates="ad", cascade="all, delete")
     popular_ad = relationship("PopularAd", uselist=False, back_populates="ad")
-    gold_verification_requests = relationship("GoldVerificationRequest", back_populates="ad", cascade="all, delete")
-    favourited_by = relationship("Favourite", back_populates="ad", cascade="all, delete")
+    gold_verification_requests = relationship(
+        "GoldVerificationRequest", back_populates="ad", cascade="all, delete"
+    )
+    favourited_by = relationship(
+        "Favourite", back_populates="ad", cascade="all, delete"
+    )
 
 
 class GoldVerificationRequest(Base):
     """Model for tracking gold verification requests"""
+
     __tablename__ = "gold_verification_requests"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     ad_id = Column(Integer, ForeignKey("ad.id"), nullable=False)
-    requested_by = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    processed_by = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True)
-    
-    status = Column(Enum(GoldVerificationStatus), default=GoldVerificationStatus.pending, nullable=False)
-    request_reason = Column(Text, nullable=True, comment="User's reason for requesting gold verification")
-    admin_comment = Column(Text, nullable=True, comment="Admin's comment on the request")
-    
-    requested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    requested_by = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    processed_by = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
+    )
+
+    status = Column(
+        Enum(GoldVerificationStatus),
+        default=GoldVerificationStatus.pending,
+        nullable=False,
+    )
+    request_reason = Column(
+        Text, nullable=True, comment="User's reason for requesting gold verification"
+    )
+    admin_comment = Column(
+        Text, nullable=True, comment="Admin's comment on the request"
+    )
+
+    requested_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     processed_at = Column(DateTime(timezone=True), nullable=True)
-    
+
     # Relationships
     ad = relationship("Ad", back_populates="gold_verification_requests")
-    requester = relationship("User", foreign_keys=[requested_by], back_populates="gold_verification_requests")
+    requester = relationship(
+        "User", foreign_keys=[requested_by], back_populates="gold_verification_requests"
+    )
     processor = relationship("User", foreign_keys=[processed_by])

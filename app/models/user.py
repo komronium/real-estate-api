@@ -25,7 +25,10 @@ class OneIDInfo(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
     )
     user_id = Column(
-        UUID(as_uuid=True), ForeignKey("user.id"), unique=True, nullable=False
+        UUID(as_uuid=True),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
 
     # One ID asosiy ma'lumotlari
@@ -136,8 +139,16 @@ class User(Base):
         "GoldVerificationRequest",
         foreign_keys="GoldVerificationRequest.requested_by",
         back_populates="requester",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     favourites = relationship("Favourite", back_populates="user", cascade="all, delete")
 
     # One ID relationship
-    one_id_info = relationship("OneIDInfo", back_populates="user", uselist=False)
+    one_id_info = relationship(
+        "OneIDInfo",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
