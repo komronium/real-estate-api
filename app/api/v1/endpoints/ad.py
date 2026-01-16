@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Query, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from uuid import UUID
 
 from app.api.deps import get_db, get_current_user, get_current_user_optional
 from app.schemas.category import AdCategoryUpdate
@@ -72,6 +73,16 @@ def get_my_ads(
 ):
     ad_service = AdService(db)
     return ad_service.get_ads_by_user(current_user.id, current_user)
+
+
+@router.get('/user/{user_id}', response_model=List[AdOut])
+def get_user_ads(
+        user_id: UUID,
+        db: Session = Depends(get_db),
+        current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    ad_service = AdService(db)
+    return ad_service.get_ads_by_user(user_id, current_user)
 
 
 @router.get("/{ad_id}", response_model=AdOut)

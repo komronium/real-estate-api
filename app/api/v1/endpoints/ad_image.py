@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, status, HTTPException, Query, File, UploadFile
-from sqlalchemy.orm import Session
 from typing import List
 
-from app.api.deps import get_db, get_current_user
-from app.services.ad_service import AdService
-from app.schemas.ad import AdOut, UploadFileResponse
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy.orm import Session
+
+from app.api.deps import get_current_user, get_db
 from app.models.user import User
+from app.schemas.ad import AdOut, UploadFileResponse
+from app.services.ad_service import AdService
 
 router = APIRouter(prefix="/api/v1/ads", tags=["Ad Images"])
 
@@ -14,8 +15,7 @@ router = APIRouter(prefix="/api/v1/ads", tags=["Ad Images"])
 def add_images_to_ad(
     ad_id: int,
     image_urls: List[str],
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
@@ -29,7 +29,7 @@ def remove_image_from_ad(
     ad_id: int,
     image_url: str = Query(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
@@ -43,7 +43,7 @@ def add_documents_to_ad(
     ad_id: int,
     document_urls: List[str],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
@@ -57,7 +57,7 @@ def remove_document_from_ad(
     ad_id: int,
     document_url: str = Query(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     ad = ad_service.get_ad_or_404(ad_id)
@@ -66,21 +66,29 @@ def remove_document_from_ad(
     return ad_service.remove_document_from_ad(ad_id, document_url)
 
 
-@router.post("/upload-image", response_model=UploadFileResponse,status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/upload-image",
+    response_model=UploadFileResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_image(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     return await ad_service.upload_file(file)
 
 
-@router.post("/upload-document", response_model=UploadFileResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/upload-document",
+    response_model=UploadFileResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ):
     ad_service = AdService(db)
     return await ad_service.upload_file(file)
