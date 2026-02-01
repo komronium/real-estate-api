@@ -1,10 +1,13 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
+import uuid
+import boto3
+from fastapi import HTTPException, status, UploadFile
 
-from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
+from app.core.config import settings
 from app.models.ad import Ad
 from app.models.favourite import Favourite
 from app.models.user import User, UserRole
@@ -143,3 +146,42 @@ class UserService:
             .subquery()
         )
         return self.db.query(Ad).filter(Ad.id.in_(fav_ad_ids)).all()
+
+    async def upload_avatar(self, user_id: str, file: UploadFile) -> User:
+        """Upload avatar file for user to S3"""
+        user = self.get_user_by_id(user_id)
+        
+        # Validate file
+        if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
+            raise HTTPException(status_code=400, detail="File must be an image (JPEG, PNG, WebP, or GIF)")
+        
+        content = await file.read()
+        file_size = len(content)
+        await file.seek(0)  # Reset position
+        if file_size > 5 * 1024 * 1024:  # 5MB limit
+            raise HTTPException(status_code=400, detail="File size must be less than 5MB")
+        
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION_NAME
+        )
+
+        file_extension = file.filename.split(".")[-1]
+        s3_file_name = f"avatars/{uuid.uuid4()}.{file_extension}"
+
+        try:
+            s3_client.upload_fileobj(
+                file.file,
+                settings.AWS_S3_BUCKET_NAME,
+                s3_file_name,
+                ExtraArgs={'ACL': 'public-read'}
+            )
+            avatar_url = f"https://{settings.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/{s3_file_name}"
+            user.avatar = avatar_url
+            self.db.commit()
+            self.db.refresh(user)
+            return user
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to upload avatar: {str(e)}")

@@ -31,8 +31,12 @@ class UserAdminCreate(UserBase):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
-    avatar: Optional[str] = None
     company_name: Optional[str] = None
+
+
+class UserAvatarUpdate(BaseModel):
+    """Schema for avatar update - avatar is handled separately via file upload"""
+    pass
 
 
 class UserOut(UserBase):

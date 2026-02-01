@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, File, UploadFile
 from sqlalchemy.orm import Session
 
 from app.models.user import User
@@ -28,6 +28,16 @@ async def update_profile(
 ) -> User:
     user_service = UserService(db)
     return await user_service.update_user(current_user.id, user_update)
+
+
+@router.patch('/avatar', response_model=UserOut, status_code=status.HTTP_200_OK)
+async def update_avatar(
+        file: UploadFile = File(...),
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+) -> User:
+    user_service = UserService(db)
+    return await user_service.upload_avatar(current_user.id, file)
 
 
 @router.delete('/', status_code=status.HTTP_204_NO_CONTENT)
